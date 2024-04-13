@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:playground/component/component.dart';
 
-class Viewer extends StatelessWidget {
+class Viewer extends StatefulWidget {
   final List<Component> listComponent;
-  Viewer({required this.listComponent, super.key});
+  final Function onViewCode;
+  void Function(void Function(void Function()))? innerSetState;
+  Viewer({required this.listComponent, required this.onViewCode, this.innerSetState, super.key});
+
+  @override
+  State<Viewer> createState() => _ViewerState();
+}
+
+class _ViewerState extends State<Viewer> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    widget.innerSetState?.call(setState);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,9 +26,11 @@ class Viewer extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        SizedBox(height: 10.0),
         ElevatedButton(
           onPressed: () {
             /// View Code
+            widget.onViewCode.call();
           },
           child: Text('View Code'),
         ),
@@ -39,7 +55,7 @@ class Viewer extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: listComponent.map((e) => e.toWidgetViewer(context)).toList(),
+                      children: widget.listComponent.map((e) => e.toWidgetViewer(context)).toList(),
                     ),
                   ),
                 ),

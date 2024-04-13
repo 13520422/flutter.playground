@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:playground/component/component.dart';
+import 'package:playground/extension/extension.dart';
 import 'package:playground/widget/add_component.dart';
+import 'package:playground/widget/custom_form.dart';
 
-class CCPositioned extends Component {
-  double? width;
-  double? height;
-  double? left, right, top, bottom;
+class CCFormSubmit extends Component {
+  String? formId;
+  AutovalidateMode? autovalidateMode;
 
-  CCPositioned({
+  CCFormSubmit({
     required String name,
     required Function(Component?) onUpdate,
     required Function(Component) onDelete,
@@ -30,62 +32,46 @@ class CCPositioned extends Component {
     Function(Component)? onWrap,
     Function(Component)? onWrapChildren,
     Component? child,
-    double? width,
-    double? height,
-    double? left,
-    double? right,
-    double? top,
-    double? bottom,
+    String? formId,
+    AutovalidateMode? autovalidateMode,
   }) {
-    var component = CCPositioned(
+    var component = CCFormSubmit(
       name: name ?? this.name!,
       onUpdate: onUpdate ?? this.onUpdate!,
       onDelete: onDelete ?? this.onDelete!,
       onWrap: onWrap ?? this.onWrap,
       onWrapChildren: onWrapChildren ?? this.onWrapChildren,
     );
-    component.width = width ?? this.width;
-    component.height = height ?? this.height;
-    component.left = left ?? this.left;
-    component.right = right ?? this.right;
-    component.top = top ?? this.top;
-    component.bottom = bottom ?? this.bottom;
+    component.formId = formId ?? this.formId;
+    component.autovalidateMode = autovalidateMode ?? this.autovalidateMode;
     component.child = child ?? this.child?.copyWith();
     return component;
   }
 
-  static CCPositioned? fromJson(Map<String, dynamic> json) {
+  static CCFormSubmit? fromJson(Map<String, dynamic> json) {
     // TODO: implement fromJson
-    var component = CCPositioned(
+    var component = CCFormSubmit(
       name: json["name"],
       onUpdate: (p0) {},
       onDelete: (p0) {},
     );
-    component.width = json["width"];
-    component.height = json["height"];
-    component.top = json["top"];
-    component.right = json["right"];
-    component.left = json["left"];
-    component.bottom = json["bottom"];
+    component.formId = json["formId"];
+    component.autovalidateMode = AutovalidateMode.onUserInteraction.fromJson(json["autovalidateMode"]);
     if (json["child"] != null) {
       component.child = Component.fromJson(json["child"]);
     }
     return component;
   }
 
-  static CCPositioned? fromWidget(Positioned widget) {
+  static CCFormSubmit? fromWidget(CustomForm widget) {
     // TODO: implement fromJson
-    var component = CCPositioned(
-      name: "Positioned",
+    var component = CCFormSubmit(
+      name: "CustomForm",
       onUpdate: (p0) {},
       onDelete: (p0) {},
     );
-    component.width = widget.width;
-    component.height = widget.height;
-    component.top = widget.top;
-    component.bottom = widget.bottom;
-    component.left = widget.left;
-    component.right = widget.right;
+    component.formId = widget.formId;
+    component.autovalidateMode = widget.autovalidateMode;
     component.child = Component.fromWidget(widget.child);
 
     return component;
@@ -97,12 +83,8 @@ class CCPositioned extends Component {
     Map<String, dynamic> json = {};
     json["runtimeType"] = runtimeType.toString();
     json["name"] = name;
-    json["width"] = width;
-    json["height"] = height;
-    json["left"] = left;
-    json["right"] = right;
-    json["height"] = top;
-    json["bottom"] = bottom;
+    json["formId"] = formId;
+    json["autovalidateMode"] = autovalidateMode?.name;
     json["child"] = child?.toJson();
     return json;
   }
@@ -110,29 +92,21 @@ class CCPositioned extends Component {
   @override
   Widget toWidgetViewer(BuildContext context) {
     // TODO: implement toWidget
-    return Positioned(
+    return CustomForm(
       key: UniqueKey(),
-      top: top,
-      bottom: bottom,
-      left: left,
-      right: right,
-      width: width,
-      height: height,
-      child: child?.toWidgetViewer(context) ?? SizedBox.shrink(),
+      formId: formId ?? "",
+      autovalidateMode: autovalidateMode,
+      child: child?.toWidgetViewer(context) ?? SizedBox(),
     );
   }
 
   @override
   Widget toWidget(BuildContext context) {
     // TODO: implement toWidget
-    return Positioned(
-      top: top,
-      bottom: bottom,
-      left: left,
-      right: right,
-      width: width,
-      height: height,
-      child: child?.toWidgetViewer(context) ?? SizedBox.shrink(),
+    return CustomForm(
+      formId: formId ?? "",
+      autovalidateMode: autovalidateMode,
+      child: child?.toWidgetViewer(context) ?? SizedBox(),
     );
   }
 
@@ -173,7 +147,7 @@ class CCPositioned extends Component {
                 children: [
                   Row(
                     children: [
-                      Text("Positioned $name ${child != null ? "..." : ""}"),
+                      Text("SizedBox $name ${child != null ? "..." : ""}"),
                       IconButton(
                           onPressed: () {
                             onDelete?.call(this);
@@ -194,6 +168,7 @@ class CCPositioned extends Component {
                             child = component;
                             onUpdate?.call(null);
                           }
+                          onUpdate?.call(null);
                           innerSetState.call(() {});
                         },
                         onDelete: (Component component) {
@@ -242,7 +217,7 @@ class CCPositioned extends Component {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Positioned $name"),
+                Text("SizedBox $name"),
                 SizedBox(
                   height: 5,
                 ),
@@ -265,6 +240,7 @@ class CCPositioned extends Component {
                                 child = component;
                                 onUpdate?.call(null);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: (Component component) {
@@ -312,6 +288,7 @@ class CCPositioned extends Component {
                                 };
                                 onWrap?.call(parent);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: onDelete!,
@@ -338,6 +315,7 @@ class CCPositioned extends Component {
                                 };
                                 onWrapChildren?.call(parent);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: onDelete!,
@@ -384,95 +362,42 @@ class CCPositioned extends Component {
                     children: [
                       Flexible(
                         child: TextFormField(
-                          decoration: InputDecoration(labelText: 'Width'),
-                          keyboardType: TextInputType.number,
-                          initialValue: width != null ? "$width" : null,
+                          decoration: InputDecoration(labelText: 'FormId'),
+                          keyboardType: TextInputType.text,
+                          initialValue: formId != null ? "$formId" : null,
                           onChanged: (value) {
-                            width = double.parse(value);
+                            formId = value;
                             onUpdate?.call(null);
                           },
                         ),
                       ),
                       Flexible(
-                        child: TextFormField(
-                          decoration: InputDecoration(labelText: 'Height'),
-                          keyboardType: TextInputType.number,
-                          initialValue: height != null ? "$height" : null,
-                          onChanged: (value) {
-                            height = double.parse(value);
-                            onUpdate?.call(null);
-                          },
-                        ),
+                        child: Builder(builder: (c) {
+                          return TextFormField(
+                              key: UniqueKey(),
+                              decoration: InputDecoration(labelText: 'AutovalidateMode'),
+                              keyboardType: TextInputType.text,
+                              initialValue: autovalidateMode != null ? "$autovalidateMode" : null,
+                              onChanged: (value) {
+                                onUpdate?.call(null);
+                              },
+                              onTap: () {
+                                ///
+                                Component.selectAutovalidateMode(
+                                  context: c,
+                                  callBack: (AutovalidateMode? auto) {
+                                    innerSetState.call(() {
+                                      autovalidateMode = auto;
+                                    });
+                                    onUpdate?.call(null);
+                                  },
+                                );
+                              });
+                        }),
                       ),
                     ],
                   ),
                 ),
-
-                ///padding
-                Container(
-                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
-                  alignment: Alignment.centerLeft,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Flexible(
-                            child: TextFormField(
-                              decoration: InputDecoration(labelText: 'Left'),
-                              keyboardType: TextInputType.number,
-                              initialValue: left != null ? "$left" : "",
-                              onChanged: (value) {
-                                left = double.parse(value);
-                                innerSetState.call(() {});
-                                onUpdate?.call(null);
-                              },
-                            ),
-                          ),
-                          Flexible(
-                            child: TextFormField(
-                              decoration: InputDecoration(labelText: 'Right'),
-                              keyboardType: TextInputType.number,
-                              initialValue: right != null ? "$right" : "",
-                              onChanged: (value) {
-                                right = double.parse(value);
-                                innerSetState.call(() {});
-                                onUpdate?.call(null);
-                              },
-                            ),
-                          ),
-                          Flexible(
-                            child: TextFormField(
-                              decoration: InputDecoration(labelText: 'Top'),
-                              keyboardType: TextInputType.number,
-                              initialValue: top != null ? "$top" : "",
-                              onChanged: (value) {
-                                top = double.parse(value);
-                                innerSetState.call(() {});
-                                onUpdate?.call(null);
-                              },
-                            ),
-                          ),
-                          Flexible(
-                            child: TextFormField(
-                              decoration: InputDecoration(labelText: 'Bottom'),
-                              keyboardType: TextInputType.number,
-                              initialValue: bottom != null ? "$bottom" : "",
-                              onChanged: (value) {
-                                bottom = double.parse(value);
-                                innerSetState.call(() {});
-                                onUpdate?.call(null);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
                 SizedBox(height: 5),
                 child?.toWidgetProperties(
                       context,
@@ -481,6 +406,7 @@ class CCPositioned extends Component {
                           child = component;
                           onUpdate?.call(null);
                         }
+                        onUpdate?.call(null);
                         innerSetState.call(() {});
                       },
                       onDelete: (Component component) {

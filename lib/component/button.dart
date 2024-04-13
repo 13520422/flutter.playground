@@ -4,6 +4,11 @@ import 'package:playground/component/component.dart';
 import 'package:playground/widget/add_component.dart';
 
 class CCButton extends Component {
+  static String getType() {
+    Type type = CCButton;
+    return type.toString();
+  }
+
   static Map<String, Function(String? data)> actionButon = {};
 
   ///using function_tree or template
@@ -62,6 +67,19 @@ class CCButton extends Component {
     return component;
   }
 
+  static CCButton? fromWidget(GestureDetector widget) {
+    // TODO: implement fromJson
+    var component = CCButton(
+      name: "GestureDetector",
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    if (widget.child != null) {
+      component.child = Component.fromWidget(widget.child!);
+    }
+    return component;
+  }
+
   @override
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -78,6 +96,20 @@ class CCButton extends Component {
     // TODO: implement toWidget
     return GestureDetector(
       key: UniqueKey(),
+      onTap: () {
+        actionButon[action ?? ""]?.call(data);
+      },
+      child: ColoredBox(
+        color: Colors.transparent,
+        child: child?.toWidgetViewer(context),
+      ),
+    );
+  }
+
+  @override
+  Widget toWidget(BuildContext context) {
+    // TODO: implement toWidget
+    return GestureDetector(
       onTap: () {
         actionButon[action ?? ""]?.call(data);
       },

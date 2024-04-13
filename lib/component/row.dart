@@ -70,6 +70,27 @@ class CCRow extends Component {
     return component;
   }
 
+  static CCRow? fromWidget(Row widget) {
+    // TODO: implement fromJson
+    var component = CCRow(
+      name: "Row",
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    component.mainAxisAlignment = widget.mainAxisAlignment;
+    component.mainAxisSize = widget.mainAxisSize;
+    component.crossAxisAlignment = widget.crossAxisAlignment;
+    if (widget.children.isNotEmpty) {
+      for (var element in widget.children) {
+        var c = Component.fromWidget(element);
+        if (c != null) {
+          component.children.add(c);
+        }
+      }
+    }
+    return component;
+  }
+
   @override
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
@@ -88,6 +109,17 @@ class CCRow extends Component {
     // TODO: implement toWidget
     return Row(
       key: UniqueKey(),
+      crossAxisAlignment: crossAxisAlignment ?? CrossAxisAlignment.center,
+      mainAxisAlignment: mainAxisAlignment ?? MainAxisAlignment.start,
+      mainAxisSize: mainAxisSize ?? MainAxisSize.max,
+      children: children.map((e) => e.toWidgetViewer(context)).toList(),
+    );
+  }
+
+  @override
+  Widget toWidget(BuildContext context) {
+    // TODO: implement toWidget
+    return Row(
       crossAxisAlignment: crossAxisAlignment ?? CrossAxisAlignment.center,
       mainAxisAlignment: mainAxisAlignment ?? MainAxisAlignment.start,
       mainAxisSize: mainAxisSize ?? MainAxisSize.max,

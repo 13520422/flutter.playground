@@ -37,6 +37,24 @@ class CCStack extends Component {
     return component;
   }
 
+  static CCStack? fromWidget(Stack widget) {
+    // TODO: implement fromJson
+    var component = CCStack(
+      name: "Stack",
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    if (widget.children.isNotEmpty) {
+      for (var element in widget.children) {
+        var c = Component.fromWidget(element);
+        if (c != null) {
+          component.children.add(c);
+        }
+      }
+    }
+    return component;
+  }
+
   @override
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
@@ -72,6 +90,14 @@ class CCStack extends Component {
     // TODO: implement toWidget
     return Stack(
       key: UniqueKey(),
+      children: children.map((e) => e.toWidgetViewer(context)).toList(),
+    );
+  }
+
+  @override
+  Widget toWidget(BuildContext context) {
+    // TODO: implement toWidget
+    return Stack(
       children: children.map((e) => e.toWidgetViewer(context)).toList(),
     );
   }

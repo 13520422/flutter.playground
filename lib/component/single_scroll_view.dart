@@ -86,6 +86,39 @@ class CCScrollView extends Component {
     return component;
   }
 
+  static CCScrollView? fromWidget(SingleChildScrollView widget) {
+    // TODO: implement fromJson
+    var component = CCScrollView(
+      name: "SingleChildScrollView",
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    component.reverse = widget.reverse;
+    component.scrollDirection = widget.scrollDirection;
+    component.padding = (widget.padding as EdgeInsets?) ?? EdgeInsets.zero;
+    if (widget.physics != null) {
+      var ls = [
+        SelectModel<ScrollPhysics>(
+            name: BouncingScrollPhysics().runtimeType.toString(), value: BouncingScrollPhysics()),
+        SelectModel<ScrollPhysics>(
+            name: ClampingScrollPhysics().runtimeType.toString(), value: ClampingScrollPhysics()),
+        SelectModel<ScrollPhysics>(
+            name: NeverScrollableScrollPhysics().runtimeType.toString(), value: NeverScrollableScrollPhysics()),
+        SelectModel<ScrollPhysics>(
+            name: AlwaysScrollableScrollPhysics().runtimeType.toString(), value: AlwaysScrollableScrollPhysics()),
+      ];
+      var ls1 = ls.where((element) => element.name == widget.physics.runtimeType.toString()).toList();
+      if (ls1.isNotEmpty) {
+        component.physics = ls1.first.value;
+      }
+    }
+    if (widget.child != null) {
+      component.child = Component.fromWidget(widget.child!);
+    }
+
+    return component;
+  }
+
   @override
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
@@ -105,6 +138,18 @@ class CCScrollView extends Component {
     // TODO: implement toWidget
     return SingleChildScrollView(
       key: UniqueKey(),
+      scrollDirection: scrollDirection,
+      reverse: reverse,
+      padding: padding,
+      physics: physics,
+      child: child?.toWidgetViewer(context),
+    );
+  }
+
+  @override
+  Widget toWidget(BuildContext context) {
+    // TODO: implement toWidget
+    return SingleChildScrollView(
       scrollDirection: scrollDirection,
       reverse: reverse,
       padding: padding,

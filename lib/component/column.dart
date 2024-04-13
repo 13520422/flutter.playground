@@ -70,6 +70,27 @@ class CCColumn extends Component {
     return component;
   }
 
+  static CCColumn? fromWidget(Column widget) {
+    // TODO: implement fromJson
+    var component = CCColumn(
+      name: "Column",
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    component.mainAxisAlignment = widget.mainAxisAlignment;
+    component.mainAxisSize = widget.mainAxisSize;
+    component.crossAxisAlignment = widget.crossAxisAlignment;
+    if (widget.children.isNotEmpty) {
+      for (var element in widget.children) {
+        var c = Component.fromWidget(element);
+        if (c != null) {
+          component.children.add(c);
+        }
+      }
+    }
+    return component;
+  }
+
   @override
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -87,6 +108,17 @@ class CCColumn extends Component {
     // TODO: implement toWidget
     return Column(
       key: UniqueKey(),
+      crossAxisAlignment: crossAxisAlignment ?? CrossAxisAlignment.center,
+      mainAxisAlignment: mainAxisAlignment ?? MainAxisAlignment.start,
+      mainAxisSize: mainAxisSize ?? MainAxisSize.max,
+      children: children.map((e) => e.toWidgetViewer(context)).toList(),
+    );
+  }
+
+  @override
+  Widget toWidget(BuildContext context) {
+    // TODO: implement toWidget
+    return Column(
       crossAxisAlignment: crossAxisAlignment ?? CrossAxisAlignment.center,
       mainAxisAlignment: mainAxisAlignment ?? MainAxisAlignment.start,
       mainAxisSize: mainAxisSize ?? MainAxisSize.max,
@@ -205,7 +237,7 @@ class CCColumn extends Component {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Row $name"),
+                Text("Column $name"),
                 SizedBox(
                   height: 5,
                 ),

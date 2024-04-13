@@ -84,8 +84,8 @@ class _PropertiesState extends State<Properties> {
                                 onUpdate: (Component? component) {
                                   if (component != null) {
                                     widget.listComponent.add(component);
-                                    setState(() {});
                                   }
+                                  setState(() {});
                                   widget.onUpdate.call();
                                 },
                                 onDelete: (Component component) {

@@ -86,6 +86,25 @@ class CCTextView extends Component {
     return component;
   }
 
+  static CCTextView? fromWidget(Text widget) {
+    // TODO: implement fromJson
+    var component = CCTextView(
+      name: "Text",
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    component.text = widget.data;
+    component.fontSize = widget.style?.fontSize;
+    component.fontFamily = widget.style?.fontFamily;
+    component.fontWeight = widget.style?.fontWeight;
+    component.textAlign = widget.textAlign;
+    component.textOverflow = widget.overflow;
+    component.maxLine = widget.maxLines;
+    component.fontStyle = widget.style?.fontStyle;
+    component.color = widget.style?.color;
+    return component;
+  }
+
   @override
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
@@ -110,6 +129,24 @@ class CCTextView extends Component {
     return Text(
       text ?? "",
       key: UniqueKey(),
+      textAlign: textAlign,
+      overflow: textOverflow,
+      maxLines: maxLine,
+      style: TextStyle(
+        fontFamily: fontFamily,
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        fontStyle: fontStyle,
+        color: color,
+      ),
+    );
+  }
+
+  @override
+  Widget toWidget(BuildContext context) {
+    // TODO: implement toWidget
+    return Text(
+      text ?? "",
       textAlign: textAlign,
       overflow: textOverflow,
       maxLines: maxLine,

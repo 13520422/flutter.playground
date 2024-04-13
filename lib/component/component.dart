@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:playground/component/button.dart';
 import 'package:playground/component/column.dart';
 import 'package:playground/component/container.dart';
+import 'package:playground/component/form_submit.dart';
 import 'package:playground/component/image.dart';
 import 'package:playground/component/positioned.dart';
 import 'package:playground/component/row.dart';
 import 'package:playground/component/single_scroll_view.dart';
 import 'package:playground/component/sized_box.dart';
 import 'package:playground/component/stack.dart';
+import 'package:playground/component/text_field.dart';
 import 'package:playground/component/text_view.dart';
+import 'package:playground/widget/custom_form.dart';
 import 'package:playground/widget/diaglog_select_box.dart';
 
 double widthDefaultComponent = 0.3;
@@ -24,6 +29,7 @@ abstract class Component {
   Component? child;
   List<Component> children = [];
   Widget toWidgetViewer(BuildContext context);
+  Widget toWidget(BuildContext context);
   Widget toWidgetProperties(
     BuildContext context, {
     Function(Component?)? onUpdate,
@@ -60,6 +66,47 @@ abstract class Component {
         return CCStack.fromJson(json);
       case "CCTextView":
         return CCTextView.fromJson(json);
+      case "CCTextFormFeild":
+        return CCTextFormFeild.fromJson(json);
+      case "CCFormSubmit":
+        return CCFormSubmit.fromJson(json);
+      default:
+    }
+    return null;
+  }
+
+  static Component? fromWidget(Widget widget) {
+    ///
+    var runtimeType = widget.runtimeType;
+    switch (runtimeType) {
+      case GestureDetector:
+        return CCButton.fromWidget(widget as GestureDetector);
+      case Column:
+        return CCColumn.fromWidget(widget as Column);
+      case Container:
+        return CCContainer.fromWidget(widget as Container);
+      case Image:
+        return CCImage.fromImage(widget as Image);
+      case SvgPicture:
+        return CCImage.fromSvgPicture(widget as SvgPicture);
+      case LottieBuilder:
+        return CCImage.fromLottie(widget as LottieBuilder);
+      case Positioned:
+        return CCPositioned.fromWidget(widget as Positioned);
+      case Row:
+        return CCRow.fromWidget(widget as Row);
+      case SingleChildScrollView:
+        return CCScrollView.fromWidget(widget as SingleChildScrollView);
+      case SizedBox:
+        return CCSizedBox.fromWidget(widget as SizedBox);
+      case Stack:
+        return CCStack.fromWidget(widget as Stack);
+      case Text:
+        return CCTextView.fromWidget(widget as Text);
+      case TextFormField:
+        return CCTextFormFeild.fromWidget(widget as TextFormField);
+      case CustomForm:
+        return CCFormSubmit.fromWidget(widget as CustomForm);
       default:
     }
     return null;
@@ -177,9 +224,19 @@ abstract class Component {
               onWrap: onWrap,
               onWrapChildren: onWrapChildren,
             )),
-        SelectModel<Component?>(name: "Text Field", value: null),
+        SelectModel<Component?>(
+          name: "Text Field",
+          value: CCScrollView(
+            name: "CCTextFormFeild $childCount",
+            onUpdate: onUpdate,
+            onDelete: onDelete,
+            onWrap: onWrap,
+            onWrapChildren: onWrapChildren,
+          ),
+        ),
         SelectModel<Component?>(name: "Check Box", value: null),
         SelectModel<Component?>(name: "Select Box", value: null),
+        SelectModel<Component?>(name: "Form", value: null),
         ...copyComponent != null
             ? [
                 SelectModel<Component?>(
@@ -864,6 +921,109 @@ abstract class Component {
         itemSelects: [
           SelectModel<Axis>(name: "${Axis.horizontal}", value: Axis.horizontal),
           SelectModel<Axis>(name: "${Axis.vertical}", value: Axis.vertical),
+        ],
+        isShowSearchInput: false,
+        multiSelect: false,
+      );
+      RenderBox renderBox = context.findRenderObject() as RenderBox;
+      var _size = renderBox.size;
+      var _offset = renderBox.localToGlobal(Offset.zero);
+      final overlay = OverlayDialogUtils.showDialogOverLay(
+        context,
+        DialogSelectBoxWeb(
+          model: dialogSelectBoxModel,
+          onUpdate: () {
+            dialogSelectBoxModel.overlayDialog?.removeOverlay();
+            var optionItem = dialogSelectBoxModel.items.where((p0) => p0.check.value).toList().first.value;
+            callBack.call(optionItem);
+          },
+          offset: _offset,
+          size: _size,
+          maxHeightDialog: 500,
+        ),
+        _offset,
+        _size,
+        500,
+        250,
+      );
+      dialogSelectBoxModel.overlayDialog = overlay;
+    } catch (e, t) {
+      // TODO
+      print("error $e");
+      print("error $t");
+    }
+
+    return;
+  }
+
+  static void selectTextInputType({
+    required BuildContext context,
+    required Function(TextInputType) callBack,
+  }) {
+    try {
+      DialogSelectBoxModel dialogSelectBoxModel = DialogSelectBoxModel(
+        isCloseTop: true,
+        title: "Select Text Input Type",
+        itemSelects: [
+          SelectModel<TextInputType>(name: "${TextInputType.datetime}", value: TextInputType.datetime),
+          SelectModel<TextInputType>(name: "${TextInputType.emailAddress}", value: TextInputType.emailAddress),
+          SelectModel<TextInputType>(name: "${TextInputType.multiline}", value: TextInputType.multiline),
+          SelectModel<TextInputType>(name: "${TextInputType.name}", value: TextInputType.name),
+          SelectModel<TextInputType>(name: "${TextInputType.number}", value: TextInputType.number),
+          SelectModel<TextInputType>(name: "${TextInputType.number}", value: TextInputType.number),
+          SelectModel<TextInputType>(name: "${TextInputType.phone}", value: TextInputType.phone),
+          SelectModel<TextInputType>(name: "${TextInputType.streetAddress}", value: TextInputType.streetAddress),
+          SelectModel<TextInputType>(name: "${TextInputType.text}", value: TextInputType.text),
+          SelectModel<TextInputType>(name: "${TextInputType.url}", value: TextInputType.url),
+          SelectModel<TextInputType>(name: "${TextInputType.visiblePassword}", value: TextInputType.visiblePassword),
+        ],
+        isShowSearchInput: false,
+        multiSelect: false,
+      );
+      RenderBox renderBox = context.findRenderObject() as RenderBox;
+      var _size = renderBox.size;
+      var _offset = renderBox.localToGlobal(Offset.zero);
+      final overlay = OverlayDialogUtils.showDialogOverLay(
+        context,
+        DialogSelectBoxWeb(
+          model: dialogSelectBoxModel,
+          onUpdate: () {
+            dialogSelectBoxModel.overlayDialog?.removeOverlay();
+            var optionItem = dialogSelectBoxModel.items.where((p0) => p0.check.value).toList().first.value;
+            callBack.call(optionItem);
+          },
+          offset: _offset,
+          size: _size,
+          maxHeightDialog: 500,
+        ),
+        _offset,
+        _size,
+        500,
+        250,
+      );
+      dialogSelectBoxModel.overlayDialog = overlay;
+    } catch (e, t) {
+      // TODO
+      print("error $e");
+      print("error $t");
+    }
+
+    return;
+  }
+
+  static void selectAutovalidateMode({
+    required BuildContext context,
+    required Function(AutovalidateMode) callBack,
+  }) {
+    try {
+      DialogSelectBoxModel dialogSelectBoxModel = DialogSelectBoxModel(
+        isCloseTop: true,
+        title: "Select AutovalidateMode",
+        itemSelects: [
+          SelectModel<AutovalidateMode>(name: "${AutovalidateMode.always}", value: AutovalidateMode.always),
+          SelectModel<AutovalidateMode>(name: "${AutovalidateMode.disabled}", value: AutovalidateMode.disabled),
+          SelectModel<AutovalidateMode>(
+              name: "${AutovalidateMode.onUserInteraction}", value: AutovalidateMode.onUserInteraction),
         ],
         isShowSearchInput: false,
         multiSelect: false,

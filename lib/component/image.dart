@@ -81,6 +81,62 @@ class CCImage extends Component {
     return component;
   }
 
+  static CCImage? fromImage(Image widget) {
+    // TODO: implement fromJson
+    var component = CCImage(
+      name: "Image",
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    component.width = widget.width;
+    component.height = widget.height;
+
+    ///
+    var t = widget.image as ResizeImage;
+    var assetImage = t.imageProvider as AssetImage;
+    component.url = assetImage.assetName;
+    component.fit = widget.fit;
+    component.imageType = ImageType.png;
+    component.borderRadius = BorderRadius.zero;
+    return component;
+  }
+
+  static CCImage? fromSvgPicture(SvgPicture widget) {
+    // TODO: implement fromJson
+    var component = CCImage(
+      name: "SvgPicture",
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    component.width = widget.width;
+    component.height = widget.height;
+
+    ///
+    component.url = (widget.bytesLoader as SvgNetworkLoader).url;
+    component.fit = widget.fit;
+    component.imageType = ImageType.svg;
+    component.borderRadius = BorderRadius.zero;
+    return component;
+  }
+
+  static CCImage? fromLottie(LottieBuilder widget) {
+    // TODO: implement fromJson
+    var component = CCImage(
+      name: "Lottie",
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    component.width = widget.width;
+    component.height = widget.height;
+
+    ///
+    component.url = (widget.lottie as NetworkLottie).url;
+    component.fit = widget.fit;
+    component.imageType = ImageType.json;
+    component.borderRadius = BorderRadius.zero;
+    return component;
+  }
+
   @override
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
@@ -135,6 +191,52 @@ class CCImage extends Component {
       default:
         w = Image.network(
           key: UniqueKey(),
+          url ?? "",
+          width: width,
+          height: height,
+          fit: fit,
+        );
+    }
+    return ClipRRect(
+      borderRadius: borderRadius,
+      child: w,
+    );
+  }
+
+  @override
+  Widget toWidget(BuildContext context) {
+    // TODO: implement toWidget
+    Widget w = SizedBox.shrink();
+
+    switch (imageType) {
+      case ImageType.png:
+        w = Image.network(
+          url ?? "",
+          width: width,
+          height: height,
+          fit: fit,
+        );
+      case ImageType.jpg:
+        w = Image.network(
+          url ?? "",
+          width: width,
+          height: height,
+          fit: fit,
+        );
+      case ImageType.svg:
+        w = SvgPicture.network(
+          url ?? "",
+          width: width,
+          height: height,
+        );
+      case ImageType.json:
+        w = Lottie.network(
+          url ?? "",
+          width: width,
+          height: height,
+        );
+      default:
+        w = Image.network(
           url ?? "",
           width: width,
           height: height,

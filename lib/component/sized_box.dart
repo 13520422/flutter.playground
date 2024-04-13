@@ -61,6 +61,21 @@ class CCSizedBox extends Component {
     return component;
   }
 
+  static CCSizedBox? fromWidget(SizedBox widget) {
+    // TODO: implement fromJson
+    var component = CCSizedBox(
+      name: "SizedBox",
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    component.width = widget.width;
+    component.height = widget.height;
+    if (widget.child != null) {
+      component.child = Component.fromWidget(widget.child!);
+    }
+    return component;
+  }
+
   @override
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
@@ -78,6 +93,16 @@ class CCSizedBox extends Component {
     // TODO: implement toWidget
     return SizedBox(
       key: UniqueKey(),
+      width: width,
+      height: height,
+      child: child?.toWidgetViewer(context),
+    );
+  }
+
+  @override
+  Widget toWidget(BuildContext context) {
+    // TODO: implement toWidget
+    return SizedBox(
       width: width,
       height: height,
       child: child?.toWidgetViewer(context),

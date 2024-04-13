@@ -78,7 +78,7 @@ class CCContainer extends Component {
     );
     component.width = json["width"];
     component.height = json["height"];
-    component.alignment = Alignment.center.fromJson(json["height"]);
+    component.alignment = Alignment.center.fromJson(json["alignment"]);
     component.padding = EdgeInsets.zero.fromJson(json["padding"]);
     component.margin = EdgeInsets.zero.fromJson(json["margin"]);
     component.border = Border().fromJson(json["border"]);
@@ -88,6 +88,37 @@ class CCContainer extends Component {
     component.boxShadow = BoxShadow().fromJson(json["boxShadow"]);
     if (json["child"] != null) {
       component.child = Component.fromJson(json["child"]);
+    }
+    return component;
+  }
+
+  static CCContainer? fromWidget(Container widget) {
+    // TODO: implement fromJson
+    var component = CCContainer(
+      name: "Container",
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    Container(width: 10);
+    component.width =
+        widget.constraints?.minWidth == widget.constraints?.maxWidth ? widget.constraints?.minWidth : null;
+    component.height =
+        widget.constraints?.minHeight == widget.constraints?.maxHeight ? widget.constraints?.minHeight : null;
+    component.alignment = (widget.alignment is Alignment?) ? widget.alignment as Alignment? : null;
+    component.padding =
+        (widget.padding is EdgeInsets) ? (widget.padding as EdgeInsets?) ?? EdgeInsets.zero : EdgeInsets.zero;
+
+    component.margin =
+        (widget.margin is EdgeInsets) ? (widget.margin as EdgeInsets?) ?? EdgeInsets.zero : EdgeInsets.zero;
+    component.border = (widget.decoration as BoxDecoration).border as Border?;
+    component.color = widget.color ?? (widget.decoration as BoxDecoration).color;
+    component.borderRadius = ((widget.decoration as BoxDecoration).borderRadius as BorderRadius?) ?? BorderRadius.zero;
+    component.shape = (widget.decoration as BoxDecoration).shape;
+    component.boxShadow = ((widget.decoration as BoxDecoration).boxShadow ?? []).isNotEmpty
+        ? ((widget.decoration as BoxDecoration).boxShadow ?? []).first
+        : null;
+    if (widget.child != null) {
+      component.child = Component.fromWidget(widget.child!);
     }
     return component;
   }
@@ -116,6 +147,26 @@ class CCContainer extends Component {
     // TODO: implement toWidget
     return Container(
       key: UniqueKey(),
+      width: width,
+      height: height,
+      margin: margin,
+      padding: padding,
+      alignment: alignment,
+      decoration: BoxDecoration(
+        color: color,
+        border: border,
+        borderRadius: borderRadius,
+        shape: shape ?? BoxShape.rectangle,
+        boxShadow: boxShadow != null ? [boxShadow!] : [],
+      ),
+      child: child?.toWidgetViewer(context),
+    );
+  }
+
+  @override
+  Widget toWidget(BuildContext context) {
+    // TODO: implement toWidget
+    return Container(
       width: width,
       height: height,
       margin: margin,

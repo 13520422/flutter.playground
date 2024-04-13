@@ -38,7 +38,8 @@ extension border on Border {
     };
   }
 
-  Border? fromJson(Map<String, dynamic> json) {
+  Border? fromJson(Map<String, dynamic>? json) {
+    if (json == null) return null;
     var bottom = json["bottom"] ?? 0;
     var top = json["top"] ?? 0;
     var left = json["left"] ?? 0;
@@ -263,5 +264,25 @@ extension boxShape on BoxShape {
       return ls.first;
     }
     return BoxShape.rectangle;
+  }
+}
+
+extension autovalidateMode on AutovalidateMode {
+  AutovalidateMode? fromJson(String? value) {
+    var ls = AutovalidateMode.values.where((element) => element.name == value).toList();
+    if (ls.isNotEmpty) {
+      return ls.first;
+    }
+    return null;
+  }
+}
+
+extension textInputType on TextInputType {
+  TextInputType? fromJson(int? value) {
+    var ls = TextInputType.values.where((element) => element.index == value).toList();
+    if (ls.isNotEmpty) {
+      return ls.first;
+    }
+    return null;
   }
 }
