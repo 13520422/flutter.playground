@@ -226,7 +226,7 @@ abstract class Component {
             )),
         SelectModel<Component?>(
           name: "Text Field",
-          value: CCScrollView(
+          value: CCTextFormFeild(
             name: "CCTextFormFeild $childCount",
             onUpdate: onUpdate,
             onDelete: onDelete,
@@ -236,7 +236,15 @@ abstract class Component {
         ),
         SelectModel<Component?>(name: "Check Box", value: null),
         SelectModel<Component?>(name: "Select Box", value: null),
-        SelectModel<Component?>(name: "Form", value: null),
+        SelectModel<Component?>(
+            name: "FormSubmit",
+            value: CCFormSubmit(
+              name: "CCFormSubmit $childCount",
+              onUpdate: onUpdate,
+              onDelete: onDelete,
+              onWrap: onWrap,
+              onWrapChildren: onWrapChildren,
+            )),
         ...copyComponent != null
             ? [
                 SelectModel<Component?>(

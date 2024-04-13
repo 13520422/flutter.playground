@@ -536,7 +536,7 @@ class CCTextFormFeild extends Component {
                 children: [
                   Row(
                     children: [
-                      Text("TextView $name ${child != null ? "..." : ""}"),
+                      Text("Text Field $name ${child != null ? "..." : ""}"),
                       IconButton(
                           onPressed: () {
                             onDelete?.call(this);
@@ -569,7 +569,7 @@ class CCTextFormFeild extends Component {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("TextView $name"),
+                Text("Text Field $name"),
                 SizedBox(
                   height: 5,
                 ),
