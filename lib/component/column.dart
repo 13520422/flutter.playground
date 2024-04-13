@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:playground/component/component.dart';
+import 'package:playground/extension/extension.dart';
 import 'package:playground/widget/add_component.dart';
 
 class CCColumn extends Component {
@@ -48,25 +49,71 @@ class CCColumn extends Component {
     return column;
   }
 
-  @override
-  void fromJson(Map<String, dynamic> json) {
+  static CCColumn? fromJson(Map<String, dynamic> json) {
     // TODO: implement fromJson
+    var component = CCColumn(
+      name: json["name"],
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    component.mainAxisAlignment = MainAxisAlignment.center.fromJson(json["mainAxisAlignment"]);
+    component.mainAxisSize = MainAxisSize.min.fromJson(json["mainAxisSize"]);
+    component.crossAxisAlignment = CrossAxisAlignment.center.fromJson(json["crossAxisAlignment"]);
+    if (json["children"] != null) {
+      for (var element in json["children"]) {
+        var c = Component.fromJson(element);
+        if (c != null) {
+          component.children.add(c);
+        }
+      }
+    }
+    return component;
   }
 
   @override
   Map<String, dynamic> toJson() {
-    // TODO: implement toJson
-    throw UnimplementedError();
+    Map<String, dynamic> json = {};
+    json["runtimeType"] = runtimeType.toString();
+    json["name"] = name;
+    json["mainAxisAlignment"] = mainAxisAlignment?.name;
+    json["mainAxisSize"] = mainAxisSize?.name;
+    json["crossAxisAlignment"] = crossAxisAlignment?.name;
+    json["children"] = children.map((e) => e.toJson()).toList();
+    return json;
   }
 
   @override
   Widget toWidgetViewer(BuildContext context) {
     // TODO: implement toWidget
-    throw UnimplementedError();
+    return Column(
+      key: UniqueKey(),
+      crossAxisAlignment: crossAxisAlignment ?? CrossAxisAlignment.center,
+      mainAxisAlignment: mainAxisAlignment ?? MainAxisAlignment.start,
+      mainAxisSize: mainAxisSize ?? MainAxisSize.max,
+      children: children.map((e) => e.toWidgetViewer(context)).toList(),
+    );
   }
 
   @override
-  Widget toWidgetProperties(BuildContext context) {
+  Widget toWidgetProperties(
+    BuildContext context, {
+    Function(Component?)? onUpdate,
+    Function(Component)? onDelete,
+    Function(Component)? onWrap,
+    Function(Component)? onWrapChildren,
+  }) {
+    if (onUpdate != null) {
+      this.onUpdate = onUpdate;
+    }
+    if (onDelete != null) {
+      this.onDelete = onDelete;
+    }
+    if (onWrap != null) {
+      this.onWrap = onWrap;
+    }
+    if (onWrapChildren != null) {
+      this.onWrapChildren = onWrapChildren;
+    }
     // TODO: implement toWidget
     return StatefulBuilder(builder: (thisLowerContext, innerSetState) {
       return GestureDetector(
@@ -89,11 +136,58 @@ class CCColumn extends Component {
                           onPressed: () {
                             onDelete?.call(this);
                           },
-                          icon: Icon(Icons.close, size: 20))
+                          icon: Icon(Icons.close, size: 20)),
+                      IconButton(
+                          onPressed: () {
+                            Component.copyComponent = copyWith();
+                          },
+                          icon: Icon(Icons.copy, size: 20))
                     ],
                   ),
                   SizedBox(width: 5),
-                  ...children.map((e) => e.toWidgetProperties(context)).toList()
+                  ...children
+                      .map((e) => e.toWidgetProperties(
+                            context,
+                            onUpdate: (Component? component) {
+                              if (component != null) {
+                                children.add(component);
+                                onUpdate?.call(null);
+                              }
+                              onUpdate?.call(null);
+                              innerSetState.call(() {});
+                            },
+                            onDelete: (Component component) {
+                              children.removeWhere((element) => element == component);
+                              onUpdate?.call(null);
+                              innerSetState.call(() {});
+                            },
+                            onWrap: (Component parent) {
+                              var index = children.indexWhere((element) => element == parent.child);
+                              if (index >= 0) {
+                                children.removeAt(index);
+                                children.insert(index, parent);
+                                children[index].onDelete = (p0) {
+                                  children.removeAt(index);
+                                  onUpdate?.call(null);
+                                  innerSetState.call(() {});
+                                };
+                              }
+                            },
+                            onWrapChildren: (Component parent) {
+                              ///
+                              var index = children.indexWhere((element) => element == parent.children.first);
+                              if (index >= 0) {
+                                children.removeAt(index);
+                                children.insert(index, parent);
+                                children[index].onDelete = (p0) {
+                                  children.removeAt(index);
+                                  onUpdate?.call(null);
+                                  innerSetState.call(() {});
+                                };
+                              }
+                            },
+                          ))
+                      .toList()
                 ],
               ),
             );
@@ -117,10 +211,11 @@ class CCColumn extends Component {
                 ),
 
                 ///control
-                Row(
-                  children: [
-                    Flexible(
-                      child: AddComponent(
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      AddComponent(
                         onPressed: (BuildContext context) async {
                           /// add child
                           Component.addComponent(
@@ -131,6 +226,7 @@ class CCColumn extends Component {
                                 children.add(component);
                                 onUpdate?.call(null);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: (Component component) {
@@ -143,6 +239,11 @@ class CCColumn extends Component {
                               if (index >= 0) {
                                 children.removeAt(index);
                                 children.insert(index, parent);
+                                children[index].onDelete = (p0) {
+                                  children.removeAt(index);
+                                  onUpdate?.call(null);
+                                  innerSetState.call(() {});
+                                };
                               }
                             },
                             onWrapChildren: (Component parent) {
@@ -151,15 +252,18 @@ class CCColumn extends Component {
                               if (index >= 0) {
                                 children.removeAt(index);
                                 children.insert(index, parent);
+                                children[index].onDelete = (p0) {
+                                  children.removeAt(index);
+                                  onUpdate?.call(null);
+                                  innerSetState.call(() {});
+                                };
                               }
                             },
                           );
                         },
                       ),
-                    ),
-                    Flexible(
-                      child: AddComponent(
-                        text: "Wrap by Component",
+                      AddComponent(
+                        text: "Wrap by\nComponent",
                         onPressed: (BuildContext context) async {
                           /// add parent
                           Component.addComponent(
@@ -168,20 +272,24 @@ class CCColumn extends Component {
                             onUpdate: (Component? parent) {
                               if (parent != null) {
                                 parent.child = this;
+                                onDelete = (p0) {
+                                  parent.child = null;
+                                  onUpdate?.call(null);
+                                };
                                 onWrap?.call(parent);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: onDelete!,
                             onWrap: onWrap!,
                             onWrapChildren: onWrapChildren!,
+                            isChild: true,
                           );
                         },
                       ),
-                    ),
-                    Flexible(
-                      child: AddComponent(
-                        text: "Wrap by Children Component",
+                      AddComponent(
+                        text: "Wrap by\nChildren Component",
                         onPressed: (BuildContext context) async {
                           /// add parent
                           Component.addComponent(
@@ -190,32 +298,44 @@ class CCColumn extends Component {
                             onUpdate: (Component? parent) {
                               if (parent != null) {
                                 parent.children.add(this);
+                                onDelete = (p0) {
+                                  parent.children.removeWhere((element) => element == this);
+                                  onUpdate?.call(null);
+                                  innerSetState.call(() {});
+                                };
                                 onWrapChildren?.call(parent);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: onDelete!,
                             onWrap: onWrap!,
                             onWrapChildren: onWrapChildren!,
+                            isChildren: true,
                           );
                         },
                       ),
-                    ),
-                    Flexible(
-                      child: ElevatedButton(
+                      ElevatedButton(
                         onPressed: () {
                           /// add child
                           onDelete?.call(this);
                         },
                         child: Text('Remove'),
                       ),
-                    ),
-                  ],
+                      ElevatedButton(
+                        onPressed: () {
+                          /// add child
+                          Component.copyComponent = copyWith();
+                        },
+                        child: Text('Copy'),
+                      ),
+                    ],
+                  ),
                 ),
 
                 ///name
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: TextFormField(
                     decoration: InputDecoration(labelText: 'Name'),
@@ -230,7 +350,7 @@ class CCColumn extends Component {
 
                 ///style
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Builder(builder: (c) {
                     return TextFormField(
@@ -256,7 +376,7 @@ class CCColumn extends Component {
                   }),
                 ),
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Builder(builder: (c) {
                     return TextFormField(
@@ -282,7 +402,7 @@ class CCColumn extends Component {
                   }),
                 ),
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Builder(builder: (c) {
                     return TextFormField(
@@ -309,7 +429,49 @@ class CCColumn extends Component {
                 ),
 
                 SizedBox(height: 5),
-                ...children.map((e) => e.toWidgetProperties(context)).toList()
+                ...children
+                    .map((e) => e.toWidgetProperties(
+                          context,
+                          onUpdate: (Component? component) {
+                            if (component != null) {
+                              children.add(component);
+                              onUpdate?.call(null);
+                            }
+                            onUpdate?.call(null);
+                            innerSetState.call(() {});
+                          },
+                          onDelete: (Component component) {
+                            children.removeWhere((element) => element == component);
+                            onUpdate?.call(null);
+                            innerSetState.call(() {});
+                          },
+                          onWrap: (Component parent) {
+                            var index = children.indexWhere((element) => element == parent.child);
+                            if (index >= 0) {
+                              children.removeAt(index);
+                              children.insert(index, parent);
+                              children[index].onDelete = (p0) {
+                                children.removeAt(index);
+                                onUpdate?.call(null);
+                                innerSetState.call(() {});
+                              };
+                            }
+                          },
+                          onWrapChildren: (Component parent) {
+                            ///
+                            var index = children.indexWhere((element) => element == parent.children.first);
+                            if (index >= 0) {
+                              children.removeAt(index);
+                              children.insert(index, parent);
+                              children[index].onDelete = (p0) {
+                                children.removeAt(index);
+                                onUpdate?.call(null);
+                                innerSetState.call(() {});
+                              };
+                            }
+                          },
+                        ))
+                    .toList()
               ],
             ),
           );

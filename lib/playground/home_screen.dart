@@ -12,7 +12,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final List<Component> listComponent = [];
 
-  List<double?> weights = [0.7, 0.3];
+  List<double?> weights = [0.65, 0.35];
 
   @override
   void initState() {
@@ -36,14 +36,15 @@ class _HomePageState extends State<HomePage> {
           weights = w.toList();
         },
         children: [
-          SingleChildScrollView(
-            child: Viewer(
-              listComponent: listComponent,
-            ),
+          Viewer(
+            key: UniqueKey(),
+            listComponent: listComponent,
           ),
           Properties(
+            key: UniqueKey(),
             listComponent: listComponent,
             onUpdate: () {
+              // print("update widget");
               setState(() {});
             },
           ),

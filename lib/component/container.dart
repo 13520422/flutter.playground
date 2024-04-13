@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
+import 'package:playground/extension/extension.dart';
 import 'package:get/get.dart';
 import 'package:playground/component/component.dart';
 import 'package:playground/widget/add_component.dart';
@@ -69,25 +69,89 @@ class CCContainer extends Component {
     return component;
   }
 
-  @override
-  void fromJson(Map<String, dynamic> json) {
+  static CCContainer? fromJson(Map<String, dynamic> json) {
     // TODO: implement fromJson
+    var component = CCContainer(
+      name: json["name"],
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    component.width = json["width"];
+    component.height = json["height"];
+    component.alignment = Alignment.center.fromJson(json["height"]);
+    component.padding = EdgeInsets.zero.fromJson(json["padding"]);
+    component.margin = EdgeInsets.zero.fromJson(json["margin"]);
+    component.border = Border().fromJson(json["border"]);
+    component.color = json["color"] != null ? Color(int.parse(json["color"])) : null;
+    component.borderRadius = BorderRadius.zero.fromJson(json["borderRadius"]);
+    component.shape = BoxShape.rectangle.fromJson(json["shape"]);
+    component.boxShadow = BoxShadow().fromJson(json["boxShadow"]);
+    if (json["child"] != null) {
+      component.child = Component.fromJson(json["child"]);
+    }
+    return component;
   }
 
   @override
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
-    throw UnimplementedError();
+    Map<String, dynamic> json = {};
+    json["runtimeType"] = runtimeType.toString();
+    json["name"] = name;
+    json["width"] = width;
+    json["height"] = height;
+    json["alignment"] = alignment?.toJson();
+    json["padding"] = padding.toJson();
+    json["margin"] = margin.toJson();
+    json["borderRadius"] = borderRadius.toJson();
+    json["border"] = border?.toJson();
+    json["boxShadow"] = boxShadow?.toJson();
+    json["color"] = color?.value;
+    json["child"] = child?.toJson();
+    return json;
   }
 
   @override
   Widget toWidgetViewer(BuildContext context) {
     // TODO: implement toWidget
-    throw UnimplementedError();
+    return Container(
+      key: UniqueKey(),
+      width: width,
+      height: height,
+      margin: margin,
+      padding: padding,
+      alignment: alignment,
+      decoration: BoxDecoration(
+        color: color,
+        border: border,
+        borderRadius: borderRadius,
+        shape: shape ?? BoxShape.rectangle,
+        boxShadow: boxShadow != null ? [boxShadow!] : [],
+      ),
+      child: child?.toWidgetViewer(context),
+    );
   }
 
   @override
-  Widget toWidgetProperties(BuildContext context) {
+  Widget toWidgetProperties(
+    BuildContext context, {
+    Function(Component?)? onUpdate,
+    Function(Component)? onDelete,
+    Function(Component)? onWrap,
+    Function(Component)? onWrapChildren,
+  }) {
+    if (onUpdate != null) {
+      this.onUpdate = onUpdate;
+    }
+    if (onDelete != null) {
+      this.onDelete = onDelete;
+    }
+    if (onWrap != null) {
+      this.onWrap = onWrap;
+    }
+    if (onWrapChildren != null) {
+      this.onWrapChildren = onWrapChildren;
+    }
     // TODO: implement toWidget
     return StatefulBuilder(builder: (thisLowerContext, innerSetState) {
       return GestureDetector(
@@ -110,11 +174,52 @@ class CCContainer extends Component {
                           onPressed: () {
                             onDelete?.call(this);
                           },
-                          icon: Icon(Icons.close, size: 20))
+                          icon: Icon(Icons.close, size: 20)),
+                      IconButton(
+                          onPressed: () {
+                            Component.copyComponent = copyWith();
+                          },
+                          icon: Icon(Icons.copy, size: 20))
                     ],
                   ),
                   SizedBox(width: 5),
-                  child?.toWidgetProperties(context) ?? const SizedBox()
+                  child?.toWidgetProperties(
+                        context,
+                        onUpdate: (Component? component) {
+                          if (component != null) {
+                            child = component;
+                          }
+                          onUpdate?.call(null);
+                          innerSetState.call(() {});
+                        },
+                        onDelete: (Component component) {
+                          child = null;
+                          onUpdate?.call(null);
+                          innerSetState.call(() {});
+                        },
+                        onWrap: (Component component) {
+                          child = component;
+                          component.onDelete = (p0) {
+                            child = null;
+                            onUpdate?.call(null);
+                            innerSetState.call(() {});
+                          };
+                          onUpdate?.call(null);
+                          innerSetState.call(() {});
+                        },
+                        onWrapChildren: (Component component) {
+                          ///
+                          child = component;
+                          component.onDelete = (p0) {
+                            child = null;
+                            onUpdate?.call(null);
+                            innerSetState.call(() {});
+                          };
+                          onUpdate?.call(null);
+                          innerSetState.call(() {});
+                        },
+                      ) ??
+                      const SizedBox()
                 ],
               ),
             );
@@ -128,6 +233,7 @@ class CCContainer extends Component {
               border: Border.all(color: Colors.grey),
               borderRadius: BorderRadius.all(Radius.circular(8)),
             ),
+            width: MediaQuery.of(context).size.width * widthDefaultComponent,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,10 +244,13 @@ class CCContainer extends Component {
                 ),
 
                 ///control
-                Row(
-                  children: [
-                    Flexible(
-                      child: AddComponent(
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AddComponent(
                         onPressed: (BuildContext context) async {
                           /// add child
                           Component.addComponent(
@@ -150,8 +259,8 @@ class CCContainer extends Component {
                             onUpdate: (Component? component) {
                               if (component != null) {
                                 child = component;
-                                onUpdate?.call(null);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: (Component component) {
@@ -159,28 +268,32 @@ class CCContainer extends Component {
                               onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
-                            onWrap: (Component parent) {
-                              var index = children.indexWhere((element) => element == parent.child);
-                              if (index >= 0) {
-                                children.removeAt(index);
-                                children.insert(index, parent);
-                              }
+                            onWrap: (Component component) {
+                              child = component;
+                              component.onDelete = (p0) {
+                                child = null;
+                                onUpdate?.call(null);
+                                innerSetState.call(() {});
+                              };
+                              onUpdate?.call(null);
+                              innerSetState.call(() {});
                             },
-                            onWrapChildren: (Component parent) {
+                            onWrapChildren: (Component component) {
                               ///
-                              var index = children.indexWhere((element) => element == parent.children.first);
-                              if (index >= 0) {
-                                children.removeAt(index);
-                                children.insert(index, parent);
-                              }
+                              child = component;
+                              component.onDelete = (p0) {
+                                child = null;
+                                onUpdate?.call(null);
+                                innerSetState.call(() {});
+                              };
+                              onUpdate?.call(null);
+                              innerSetState.call(() {});
                             },
                           );
                         },
                       ),
-                    ),
-                    Flexible(
-                      child: AddComponent(
-                        text: "Wrap by Component",
+                      AddComponent(
+                        text: "Wrap by\nComponent",
                         onPressed: (BuildContext context) async {
                           /// add parent
                           Component.addComponent(
@@ -189,20 +302,24 @@ class CCContainer extends Component {
                             onUpdate: (Component? parent) {
                               if (parent != null) {
                                 parent.child = this;
+                                onDelete = (p0) {
+                                  parent.child = null;
+                                  onUpdate?.call(null);
+                                };
                                 onWrap?.call(parent);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: onDelete!,
                             onWrap: onWrap!,
                             onWrapChildren: onWrapChildren!,
+                            isChild: true,
                           );
                         },
                       ),
-                    ),
-                    Flexible(
-                      child: AddComponent(
-                        text: "Wrap by Children Component",
+                      AddComponent(
+                        text: "Wrap by\nChildren Component",
                         onPressed: (BuildContext context) async {
                           /// add parent
                           Component.addComponent(
@@ -211,30 +328,42 @@ class CCContainer extends Component {
                             onUpdate: (Component? parent) {
                               if (parent != null) {
                                 parent.children.add(this);
+                                onDelete = (p0) {
+                                  parent.children.removeWhere((element) => element == this);
+                                  onUpdate?.call(null);
+                                  innerSetState.call(() {});
+                                };
                                 onWrapChildren?.call(parent);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: onDelete!,
                             onWrap: onWrap!,
                             onWrapChildren: onWrapChildren!,
+                            isChildren: true,
                           );
                         },
                       ),
-                    ),
-                    Flexible(
-                      child: ElevatedButton(
+                      ElevatedButton(
                         onPressed: () {
                           /// add child
                           onDelete?.call(this);
                         },
                         child: Text('Remove'),
                       ),
-                    ),
-                  ],
+                      ElevatedButton(
+                        onPressed: () {
+                          /// add child
+                          Component.copyComponent = copyWith();
+                        },
+                        child: Text('Copy'),
+                      ),
+                    ],
+                  ),
                 ),
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: TextFormField(
                     decoration: InputDecoration(labelText: 'Name'),
@@ -247,7 +376,7 @@ class CCContainer extends Component {
                   ),
                 ),
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Row(
                     children: [
@@ -279,7 +408,7 @@ class CCContainer extends Component {
 
                 ///Alignment
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Builder(builder: (c) {
                     return TextFormField(
@@ -307,7 +436,7 @@ class CCContainer extends Component {
 
                 ///padding
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -373,7 +502,7 @@ class CCContainer extends Component {
 
                 ///margin
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Column(
                     children: [
@@ -438,16 +567,16 @@ class CCContainer extends Component {
                 Row(
                   children: [
                     Container(
-                      width: MediaQuery.of(context).size.width * 0.25,
                       alignment: Alignment.centerLeft,
                       child: Row(
                         children: [
-                          Expanded(
+                          Container(
+                            width: 150,
                             child: TextFormField(
                               decoration: InputDecoration(labelText: 'Color', hintText: "0x00000000"),
                               keyboardType: TextInputType.text,
                               initialValue:
-                                  color != null ? "0x${color?.value.toRadixString(16).padLeft(8, '0')})" : null,
+                                  color != null ? "0x${color?.value.toRadixString(16).padLeft(8, '0')}" : null,
                               onChanged: (value) {
                                 color = Color(int.parse(value));
                                 onUpdate?.call(null);
@@ -464,7 +593,7 @@ class CCContainer extends Component {
 
                 /// Border
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -479,7 +608,7 @@ class CCContainer extends Component {
                               decoration: InputDecoration(labelText: 'Color', hintText: "0x00000000"),
                               keyboardType: TextInputType.text,
                               initialValue: border?.top.color != null
-                                  ? "0x${border?.top.color.value.toRadixString(16).padLeft(8, '0')})"
+                                  ? "0x${border?.top.color.value.toRadixString(16).padLeft(8, '0')}"
                                   : null,
                               onChanged: (value) {
                                 var _color = Color(int.parse(value));
@@ -635,7 +764,7 @@ class CCContainer extends Component {
 
                 /// BorderRadius
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -705,7 +834,7 @@ class CCContainer extends Component {
 
                 /// Shape
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Builder(builder: (c) {
                     return TextFormField(
@@ -733,7 +862,7 @@ class CCContainer extends Component {
 
                 /// BoxShadow
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -748,7 +877,7 @@ class CCContainer extends Component {
                               decoration: InputDecoration(labelText: 'Color', hintText: "0x00000000"),
                               keyboardType: TextInputType.text,
                               initialValue: boxShadow?.color != null
-                                  ? "0x${boxShadow?.color.value.toRadixString(16).padLeft(8, '0')})"
+                                  ? "0x${boxShadow?.color.value.toRadixString(16).padLeft(8, '0')}"
                                   : null,
                               onChanged: (value) {
                                 var _color = Color(int.parse(value));
@@ -847,7 +976,43 @@ class CCContainer extends Component {
                 ),
 
                 SizedBox(height: 5),
-                child?.toWidgetProperties(context) ?? const SizedBox()
+                child?.toWidgetProperties(
+                      context,
+                      onUpdate: (Component? component) {
+                        if (component != null) {
+                          child = component;
+                        }
+                        onUpdate?.call(null);
+                        innerSetState.call(() {});
+                      },
+                      onDelete: (Component component) {
+                        child = null;
+                        onUpdate?.call(null);
+                        innerSetState.call(() {});
+                      },
+                      onWrap: (Component component) {
+                        child = component;
+                        component.onDelete = (p0) {
+                          child = null;
+                          onUpdate?.call(null);
+                          innerSetState.call(() {});
+                        };
+                        onUpdate?.call(null);
+                        innerSetState.call(() {});
+                      },
+                      onWrapChildren: (Component component) {
+                        ///
+                        child = component;
+                        component.onDelete = (p0) {
+                          child = null;
+                          onUpdate?.call(null);
+                          innerSetState.call(() {});
+                        };
+                        onUpdate?.call(null);
+                        innerSetState.call(() {});
+                      },
+                    ) ??
+                    const SizedBox()
               ],
             ),
           );

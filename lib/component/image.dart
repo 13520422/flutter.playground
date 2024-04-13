@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:playground/component/component.dart';
+import 'package:playground/extension/extension.dart';
 import 'package:playground/widget/add_component.dart';
 
 enum ImageType {
@@ -17,6 +19,7 @@ class CCImage extends Component {
   String? url;
   BoxFit? fit;
   ImageType? imageType;
+  BorderRadius borderRadius = BorderRadius.zero;
   CCImage({
     required String name,
     required Function(Component?) onUpdate,
@@ -43,6 +46,7 @@ class CCImage extends Component {
     String? url,
     BoxFit? fit,
     ImageType? imageType,
+    BorderRadius? borderRadius,
   }) {
     var component = CCImage(
       name: name ?? this.name!,
@@ -56,28 +60,113 @@ class CCImage extends Component {
     component.url = url ?? this.url;
     component.fit = fit ?? this.fit;
     component.imageType = imageType ?? this.imageType;
+    component.borderRadius = borderRadius ?? this.borderRadius;
+
     return component;
   }
 
-  @override
-  void fromJson(Map<String, dynamic> json) {
+  static CCImage? fromJson(Map<String, dynamic> json) {
     // TODO: implement fromJson
+    var component = CCImage(
+      name: json["name"],
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    component.width = json["width"];
+    component.height = json["height"];
+    component.url = json["url"];
+    component.fit = BoxFit.cover.fromJson(json["fit"]);
+    component.imageType = ImageType.jpg.fromJson(json["imageType"]);
+    component.borderRadius = BorderRadius.zero.fromJson(json["borderRadius"]);
+    return component;
   }
 
   @override
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
-    throw UnimplementedError();
+    Map<String, dynamic> json = {};
+    json["runtimeType"] = runtimeType.toString();
+    json["name"] = name;
+    json["width"] = width;
+    json["height"] = height;
+    json["url"] = url;
+    json["fit"] = fit?.name;
+    json["imageType"] = imageType?.name;
+    json["borderRadius"] = borderRadius.toJson();
+    return json;
   }
 
   @override
   Widget toWidgetViewer(BuildContext context) {
     // TODO: implement toWidget
-    throw UnimplementedError();
+    Widget w = SizedBox.shrink();
+
+    switch (imageType) {
+      case ImageType.png:
+        w = Image.network(
+          key: UniqueKey(),
+          url ?? "",
+          width: width,
+          height: height,
+          fit: fit,
+        );
+      case ImageType.jpg:
+        w = Image.network(
+          key: UniqueKey(),
+          url ?? "",
+          width: width,
+          height: height,
+          fit: fit,
+        );
+      case ImageType.svg:
+        w = SvgPicture.network(
+          key: UniqueKey(),
+          url ?? "",
+          width: width,
+          height: height,
+        );
+      case ImageType.json:
+        w = Lottie.network(
+          key: UniqueKey(),
+          url ?? "",
+          width: width,
+          height: height,
+        );
+      default:
+        w = Image.network(
+          key: UniqueKey(),
+          url ?? "",
+          width: width,
+          height: height,
+          fit: fit,
+        );
+    }
+    return ClipRRect(
+      borderRadius: borderRadius,
+      child: w,
+    );
   }
 
   @override
-  Widget toWidgetProperties(BuildContext context) {
+  Widget toWidgetProperties(
+    BuildContext context, {
+    Function(Component?)? onUpdate,
+    Function(Component)? onDelete,
+    Function(Component)? onWrap,
+    Function(Component)? onWrapChildren,
+  }) {
+    if (onUpdate != null) {
+      this.onUpdate = onUpdate;
+    }
+    if (onDelete != null) {
+      this.onDelete = onDelete;
+    }
+    if (onWrap != null) {
+      this.onWrap = onWrap;
+    }
+    if (onWrapChildren != null) {
+      this.onWrapChildren = onWrapChildren;
+    }
     // TODO: implement toWidget
     return StatefulBuilder(builder: (thisLowerContext, innerSetState) {
       return GestureDetector(
@@ -100,7 +189,12 @@ class CCImage extends Component {
                           onPressed: () {
                             onDelete?.call(this);
                           },
-                          icon: Icon(Icons.close, size: 20))
+                          icon: Icon(Icons.close, size: 20)),
+                      IconButton(
+                          onPressed: () {
+                            Component.copyComponent = copyWith();
+                          },
+                          icon: Icon(Icons.copy, size: 20))
                     ],
                   ),
                   SizedBox(width: 5),
@@ -118,6 +212,7 @@ class CCImage extends Component {
               border: Border.all(color: Colors.grey),
               borderRadius: BorderRadius.all(Radius.circular(8)),
             ),
+            width: MediaQuery.of(context).size.width * widthDefaultComponent,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,11 +223,12 @@ class CCImage extends Component {
                 ),
 
                 ///control
-                Row(
-                  children: [
-                    Flexible(
-                      child: AddComponent(
-                        text: "Wrap by Component",
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      AddComponent(
+                        text: "Wrap by\nComponent",
                         onPressed: (BuildContext context) async {
                           /// add parent
                           Component.addComponent(
@@ -141,20 +237,24 @@ class CCImage extends Component {
                             onUpdate: (Component? parent) {
                               if (parent != null) {
                                 parent.child = this;
+                                onDelete = (p0) {
+                                  parent.child = null;
+                                  onUpdate?.call(null);
+                                };
                                 onWrap?.call(parent);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: onDelete!,
                             onWrap: onWrap!,
                             onWrapChildren: onWrapChildren!,
+                            isChild: true,
                           );
                         },
                       ),
-                    ),
-                    Flexible(
-                      child: AddComponent(
-                        text: "Wrap by Children Component",
+                      AddComponent(
+                        text: "Wrap by\nChildren Component",
                         onPressed: (BuildContext context) async {
                           /// add parent
                           Component.addComponent(
@@ -163,30 +263,42 @@ class CCImage extends Component {
                             onUpdate: (Component? parent) {
                               if (parent != null) {
                                 parent.children.add(this);
+                                onDelete = (p0) {
+                                  parent.children.removeWhere((element) => element == this);
+                                  onUpdate?.call(null);
+                                  innerSetState.call(() {});
+                                };
                                 onWrapChildren?.call(parent);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: onDelete!,
                             onWrap: onWrap!,
                             onWrapChildren: onWrapChildren!,
+                            isChildren: true,
                           );
                         },
                       ),
-                    ),
-                    Flexible(
-                      child: ElevatedButton(
+                      ElevatedButton(
                         onPressed: () {
                           /// add child
                           onDelete?.call(this);
                         },
                         child: Text('Remove'),
                       ),
-                    ),
-                  ],
+                      ElevatedButton(
+                        onPressed: () {
+                          /// add child
+                          Component.copyComponent = copyWith();
+                        },
+                        child: Text('Copy'),
+                      ),
+                    ],
+                  ),
                 ),
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: TextFormField(
                     decoration: InputDecoration(labelText: 'Name'),
@@ -199,20 +311,20 @@ class CCImage extends Component {
                   ),
                 ),
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: TextFormField(
                     decoration: InputDecoration(labelText: 'Url'),
                     keyboardType: TextInputType.text,
                     initialValue: url,
                     onChanged: (value) {
-                      url = url;
+                      url = value;
                       onUpdate?.call(null);
                     },
                   ),
                 ),
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Row(
                     children: [
@@ -244,7 +356,7 @@ class CCImage extends Component {
 
                 /// box fit
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Builder(builder: (c) {
                     return TextFormField(
@@ -272,14 +384,14 @@ class CCImage extends Component {
 
                 /// box type
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Builder(builder: (c) {
                     return TextFormField(
                         key: UniqueKey(),
                         decoration: InputDecoration(labelText: 'Image Type'),
                         keyboardType: TextInputType.text,
-                        initialValue: fit != null ? "$fit" : null,
+                        initialValue: imageType != null ? "$imageType" : null,
                         onChanged: (value) {
                           onUpdate?.call(null);
                         },
@@ -298,6 +410,75 @@ class CCImage extends Component {
                   }),
                 ),
 
+                /// BorderRadius
+                Container(
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("BorderRadius"),
+                      Row(
+                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: TextFormField(
+                              decoration: InputDecoration(labelText: 'Top Left'),
+                              keyboardType: TextInputType.number,
+                              initialValue: "${borderRadius.topLeft.x}",
+                              onChanged: (value) {
+                                var topLeft = double.parse(value);
+                                borderRadius = borderRadius.copyWith(topLeft: Radius.circular(topLeft));
+                                innerSetState.call(() {});
+                                onUpdate?.call(null);
+                              },
+                            ),
+                          ),
+                          Flexible(
+                            child: TextFormField(
+                              decoration: InputDecoration(labelText: 'Top Right'),
+                              keyboardType: TextInputType.number,
+                              initialValue: "${borderRadius.topRight.x}",
+                              onChanged: (value) {
+                                var topRight = double.parse(value);
+                                borderRadius = borderRadius.copyWith(topRight: Radius.circular(topRight));
+                                innerSetState.call(() {});
+                                onUpdate?.call(null);
+                              },
+                            ),
+                          ),
+                          Flexible(
+                            child: TextFormField(
+                              decoration: InputDecoration(labelText: 'Bottom Left'),
+                              keyboardType: TextInputType.number,
+                              initialValue: "${borderRadius.bottomLeft.x}",
+                              onChanged: (value) {
+                                var bottomLeft = double.parse(value);
+                                borderRadius = borderRadius.copyWith(bottomLeft: Radius.circular(bottomLeft));
+                                innerSetState.call(() {});
+                                onUpdate?.call(null);
+                              },
+                            ),
+                          ),
+                          Flexible(
+                            child: TextFormField(
+                              decoration: InputDecoration(labelText: 'Bottom Right'),
+                              keyboardType: TextInputType.number,
+                              initialValue: "${borderRadius.bottomRight.x}",
+                              onChanged: (value) {
+                                var bottomRight = double.parse(value);
+                                borderRadius = borderRadius.copyWith(bottomRight: Radius.circular(bottomRight));
+                                innerSetState.call(() {});
+                                onUpdate?.call(null);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
                 SizedBox(height: 5),
                 child?.toWidgetProperties(context) ?? const SizedBox()
               ],

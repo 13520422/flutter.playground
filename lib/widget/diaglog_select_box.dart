@@ -86,7 +86,7 @@ class DialogSelectBoxModel {
     if (textSearch.value.isNotEmpty) {
       var ls = <SelectModel>[];
       for (var element in items) {
-        if (element.name.contains(textSearch.value)) {
+        if (element.name.toLowerCase().contains(textSearch.value)) {
           ls.add(element);
         }
       }

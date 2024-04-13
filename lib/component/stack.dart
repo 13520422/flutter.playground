@@ -18,15 +18,33 @@ class CCStack extends Component {
     super.onWrap = onWrap;
     super.onWrapChildren = onWrapChildren;
   }
-  @override
-  void fromJson(Map<String, dynamic> json) {
+
+  static CCStack? fromJson(Map<String, dynamic> json) {
     // TODO: implement fromJson
+    var component = CCStack(
+      name: json["name"],
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    if (json["children"] != null) {
+      for (var element in json["children"]) {
+        var c = Component.fromJson(element);
+        if (c != null) {
+          component.children.add(c);
+        }
+      }
+    }
+    return component;
   }
 
   @override
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
-    throw UnimplementedError();
+    Map<String, dynamic> json = {};
+    json["name"] = name;
+    json["runtimeType"] = runtimeType.toString();
+    json["children"] = children.map((e) => e.toJson()).toList();
+    return json;
   }
 
   @override
@@ -52,11 +70,32 @@ class CCStack extends Component {
   @override
   Widget toWidgetViewer(BuildContext context) {
     // TODO: implement toWidget
-    throw UnimplementedError();
+    return Stack(
+      key: UniqueKey(),
+      children: children.map((e) => e.toWidgetViewer(context)).toList(),
+    );
   }
 
   @override
-  Widget toWidgetProperties(BuildContext context) {
+  Widget toWidgetProperties(
+    BuildContext context, {
+    Function(Component?)? onUpdate,
+    Function(Component)? onDelete,
+    Function(Component)? onWrap,
+    Function(Component)? onWrapChildren,
+  }) {
+    if (onUpdate != null) {
+      this.onUpdate = onUpdate;
+    }
+    if (onDelete != null) {
+      this.onDelete = onDelete;
+    }
+    if (onWrap != null) {
+      this.onWrap = onWrap;
+    }
+    if (onWrapChildren != null) {
+      this.onWrapChildren = onWrapChildren;
+    }
     // TODO: implement toWidget
     return StatefulBuilder(builder: (thisLowerContext, innerSetState) {
       return GestureDetector(
@@ -79,11 +118,58 @@ class CCStack extends Component {
                           onPressed: () {
                             onDelete?.call(this);
                           },
-                          icon: Icon(Icons.close, size: 20))
+                          icon: Icon(Icons.close, size: 20)),
+                      IconButton(
+                          onPressed: () {
+                            Component.copyComponent = copyWith();
+                          },
+                          icon: Icon(Icons.copy, size: 20))
                     ],
                   ),
                   SizedBox(width: 5),
-                  ...children.map((e) => e.toWidgetProperties(context)).toList()
+                  ...children
+                      .map((e) => e.toWidgetProperties(
+                            context,
+                            onUpdate: (Component? component) {
+                              if (component != null) {
+                                children.add(component);
+                                onUpdate?.call(null);
+                              }
+                              onUpdate?.call(null);
+                              innerSetState.call(() {});
+                            },
+                            onDelete: (Component component) {
+                              children.removeWhere((element) => element == component);
+                              onUpdate?.call(null);
+                              innerSetState.call(() {});
+                            },
+                            onWrap: (Component parent) {
+                              var index = children.indexWhere((element) => element == parent.child);
+                              if (index >= 0) {
+                                children.removeAt(index);
+                                children.insert(index, parent);
+                                children[index].onDelete = (p0) {
+                                  children.removeAt(index);
+                                  onUpdate?.call(null);
+                                  innerSetState.call(() {});
+                                };
+                              }
+                            },
+                            onWrapChildren: (Component parent) {
+                              ///
+                              var index = children.indexWhere((element) => element == parent.children.first);
+                              if (index >= 0) {
+                                children.removeAt(index);
+                                children.insert(index, parent);
+                                children[index].onDelete = (p0) {
+                                  children.removeAt(index);
+                                  onUpdate?.call(null);
+                                  innerSetState.call(() {});
+                                };
+                              }
+                            },
+                          ))
+                      .toList()
                 ],
               ),
             );
@@ -97,6 +183,7 @@ class CCStack extends Component {
               border: Border.all(color: Colors.grey),
               borderRadius: BorderRadius.all(Radius.circular(8)),
             ),
+            width: MediaQuery.of(context).size.width * widthDefaultComponent,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,10 +194,11 @@ class CCStack extends Component {
                 ),
 
                 ///control
-                Row(
-                  children: [
-                    Flexible(
-                      child: AddComponent(
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      AddComponent(
                         onPressed: (BuildContext context) async {
                           /// add child
                           Component.addComponent(
@@ -121,6 +209,7 @@ class CCStack extends Component {
                                 children.add(component);
                                 onUpdate?.call(null);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: (Component component) {
@@ -133,6 +222,11 @@ class CCStack extends Component {
                               if (index >= 0) {
                                 children.removeAt(index);
                                 children.insert(index, parent);
+                                children[index].onDelete = (p0) {
+                                  children.removeAt(index);
+                                  onUpdate?.call(null);
+                                  innerSetState.call(() {});
+                                };
                               }
                             },
                             onWrapChildren: (Component parent) {
@@ -141,15 +235,18 @@ class CCStack extends Component {
                               if (index >= 0) {
                                 children.removeAt(index);
                                 children.insert(index, parent);
+                                children[index].onDelete = (p0) {
+                                  children.removeAt(index);
+                                  onUpdate?.call(null);
+                                  innerSetState.call(() {});
+                                };
                               }
                             },
                           );
                         },
                       ),
-                    ),
-                    Flexible(
-                      child: AddComponent(
-                        text: "Wrap by Component",
+                      AddComponent(
+                        text: "Wrap by\nComponent",
                         onPressed: (BuildContext context) async {
                           /// add parent
                           Component.addComponent(
@@ -158,20 +255,24 @@ class CCStack extends Component {
                             onUpdate: (Component? parent) {
                               if (parent != null) {
                                 parent.child = this;
+                                onDelete = (p0) {
+                                  parent.child = null;
+                                  onUpdate?.call(null);
+                                };
                                 onWrap?.call(parent);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: onDelete!,
                             onWrap: onWrap!,
                             onWrapChildren: onWrapChildren!,
+                            isChild: true,
                           );
                         },
                       ),
-                    ),
-                    Flexible(
-                      child: AddComponent(
-                        text: "Wrap by Children Component",
+                      AddComponent(
+                        text: "Wrap by\nChildren Component",
                         onPressed: (BuildContext context) async {
                           /// add parent
                           Component.addComponent(
@@ -180,32 +281,44 @@ class CCStack extends Component {
                             onUpdate: (Component? parent) {
                               if (parent != null) {
                                 parent.children.add(this);
+                                onDelete = (p0) {
+                                  parent.children.removeWhere((element) => element == this);
+                                  onUpdate?.call(null);
+                                  innerSetState.call(() {});
+                                };
                                 onWrapChildren?.call(parent);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: onDelete!,
                             onWrap: onWrap!,
                             onWrapChildren: onWrapChildren!,
+                            isChildren: true,
                           );
                         },
                       ),
-                    ),
-                    Flexible(
-                      child: ElevatedButton(
+                      ElevatedButton(
                         onPressed: () {
                           /// add child
                           onDelete?.call(this);
                         },
                         child: Text('Remove'),
                       ),
-                    ),
-                  ],
+                      ElevatedButton(
+                        onPressed: () {
+                          /// add child
+                          Component.copyComponent = copyWith();
+                        },
+                        child: Text('Copy'),
+                      ),
+                    ],
+                  ),
                 ),
 
                 ///name
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: TextFormField(
                     decoration: InputDecoration(labelText: 'Name'),
@@ -219,7 +332,49 @@ class CCStack extends Component {
                 ),
 
                 SizedBox(height: 5),
-                ...children.map((e) => e.toWidgetProperties(context)).toList()
+                ...children
+                    .map((e) => e.toWidgetProperties(
+                          context,
+                          onUpdate: (Component? component) {
+                            if (component != null) {
+                              children.add(component);
+                              onUpdate?.call(null);
+                            }
+                            onUpdate?.call(null);
+                            innerSetState.call(() {});
+                          },
+                          onDelete: (Component component) {
+                            children.removeWhere((element) => element == component);
+                            onUpdate?.call(null);
+                            innerSetState.call(() {});
+                          },
+                          onWrap: (Component parent) {
+                            var index = children.indexWhere((element) => element == parent.child);
+                            if (index >= 0) {
+                              children.removeAt(index);
+                              children.insert(index, parent);
+                              children[index].onDelete = (p0) {
+                                children.removeAt(index);
+                                onUpdate?.call(null);
+                                innerSetState.call(() {});
+                              };
+                            }
+                          },
+                          onWrapChildren: (Component parent) {
+                            ///
+                            var index = children.indexWhere((element) => element == parent.children.first);
+                            if (index >= 0) {
+                              children.removeAt(index);
+                              children.insert(index, parent);
+                              children[index].onDelete = (p0) {
+                                children.removeAt(index);
+                                onUpdate?.call(null);
+                                innerSetState.call(() {});
+                              };
+                            }
+                          },
+                        ))
+                    .toList()
               ],
             ),
           );

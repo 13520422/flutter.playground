@@ -4,9 +4,11 @@ import 'package:playground/component/component.dart';
 import 'package:playground/widget/add_component.dart';
 
 class CCButton extends Component {
+  static Map<String, Function(String? data)> actionButon = {};
+
   ///using function_tree or template
   String? action;
-
+  String? data;
   CCButton({
     required String name,
     required Function(Component?) onUpdate,
@@ -30,38 +32,82 @@ class CCButton extends Component {
     Function(Component)? onWrapChildren,
     Component? child,
     String? action,
+    String? data,
   }) {
     var component = CCButton(
-      name: name ?? this.name!,
+      name: name ?? this.name ?? "",
       onUpdate: onUpdate ?? this.onUpdate!,
       onDelete: onDelete ?? this.onDelete!,
       onWrap: onWrap ?? this.onWrap,
       onWrapChildren: onWrapChildren ?? this.onWrapChildren!,
     );
-    component.child = child ?? this.child;
+    component.child = child ?? this.child?.copyWith();
     component.action = action ?? this.action;
+    component.data = data ?? this.data;
+    return component;
+  }
+
+  static CCButton? fromJson(Map<String, dynamic> json) {
+    // TODO: implement fromJson
+    var component = CCButton(
+      name: json["name"],
+      onUpdate: (p0) {},
+      onDelete: (p0) {},
+    );
+    component.action = json["action"];
+    component.data = json["data"];
+    if (json["child"] != null) {
+      component.child = Component.fromJson(json["child"]);
+    }
     return component;
   }
 
   @override
-  void fromJson(Map<String, dynamic> json) {
-    // TODO: implement fromJson
-  }
-
-  @override
   Map<String, dynamic> toJson() {
-    // TODO: implement toJson
-    throw UnimplementedError();
+    Map<String, dynamic> json = {};
+    json["runtimeType"] = runtimeType.toString();
+    json["name"] = name;
+    json["action"] = action;
+    json["data"] = data;
+    json["child"] = child?.toJson();
+    return json;
   }
 
   @override
   Widget toWidgetViewer(BuildContext context) {
     // TODO: implement toWidget
-    throw UnimplementedError();
+    return GestureDetector(
+      key: UniqueKey(),
+      onTap: () {
+        actionButon[action ?? ""]?.call(data);
+      },
+      child: ColoredBox(
+        color: Colors.transparent,
+        child: child?.toWidgetViewer(context),
+      ),
+    );
   }
 
   @override
-  Widget toWidgetProperties(BuildContext context) {
+  Widget toWidgetProperties(
+    BuildContext context, {
+    Function(Component?)? onUpdate,
+    Function(Component)? onDelete,
+    Function(Component)? onWrap,
+    Function(Component)? onWrapChildren,
+  }) {
+    if (onUpdate != null) {
+      this.onUpdate = onUpdate;
+    }
+    if (onDelete != null) {
+      this.onDelete = onDelete;
+    }
+    if (onWrap != null) {
+      this.onWrap = onWrap;
+    }
+    if (onWrapChildren != null) {
+      this.onWrapChildren = onWrapChildren;
+    }
     // TODO: implement toWidget
     return StatefulBuilder(builder: (thisLowerContext, innerSetState) {
       return GestureDetector(
@@ -84,11 +130,52 @@ class CCButton extends Component {
                           onPressed: () {
                             onDelete?.call(this);
                           },
-                          icon: Icon(Icons.close, size: 20))
+                          icon: Icon(Icons.close, size: 20)),
+                      IconButton(
+                          onPressed: () {
+                            Component.copyComponent = copyWith();
+                          },
+                          icon: Icon(Icons.copy, size: 20))
                     ],
                   ),
                   SizedBox(width: 5),
-                  child?.toWidgetProperties(context) ?? const SizedBox()
+                  child?.toWidgetProperties(
+                        context,
+                        onUpdate: (Component? component) {
+                          if (component != null) {
+                            child = component;
+                          }
+                          innerSetState.call(() {});
+                          onUpdate?.call(null);
+                        },
+                        onDelete: (Component component) {
+                          child = null;
+                          onUpdate?.call(null);
+                          innerSetState.call(() {});
+                        },
+                        onWrap: (Component component) {
+                          child = component;
+                          component.onDelete = (p0) {
+                            child = null;
+                            onUpdate?.call(null);
+                            innerSetState.call(() {});
+                          };
+                          onUpdate?.call(null);
+                          innerSetState.call(() {});
+                        },
+                        onWrapChildren: (Component component) {
+                          ///
+                          child = component;
+                          component.onDelete = (p0) {
+                            child = null;
+                            onUpdate?.call(null);
+                            innerSetState.call(() {});
+                          };
+                          onUpdate?.call(null);
+                          innerSetState.call(() {});
+                        },
+                      ) ??
+                      const SizedBox()
                 ],
               ),
             );
@@ -112,10 +199,13 @@ class CCButton extends Component {
                 ),
 
                 ///control
-                Row(
-                  children: [
-                    Flexible(
-                      child: AddComponent(
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AddComponent(
                         onPressed: (BuildContext context) async {
                           /// add child
                           Component.addComponent(
@@ -124,37 +214,41 @@ class CCButton extends Component {
                             onUpdate: (Component? component) {
                               if (component != null) {
                                 child = component;
-                                onUpdate?.call(null);
                               }
                               innerSetState.call(() {});
+                              onUpdate?.call(null);
                             },
                             onDelete: (Component component) {
                               child = null;
                               onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
-                            onWrap: (Component parent) {
-                              var index = children.indexWhere((element) => element == parent.child);
-                              if (index >= 0) {
-                                children.removeAt(index);
-                                children.insert(index, parent);
-                              }
+                            onWrap: (Component component) {
+                              child = component;
+                              component.onDelete = (p0) {
+                                child = null;
+                                onUpdate?.call(null);
+                                innerSetState.call(() {});
+                              };
+                              onUpdate?.call(null);
+                              innerSetState.call(() {});
                             },
-                            onWrapChildren: (Component parent) {
+                            onWrapChildren: (Component component) {
                               ///
-                              var index = children.indexWhere((element) => element == parent.children.first);
-                              if (index >= 0) {
-                                children.removeAt(index);
-                                children.insert(index, parent);
-                              }
+                              child = component;
+                              component.onDelete = (p0) {
+                                child = null;
+                                onUpdate?.call(null);
+                                innerSetState.call(() {});
+                              };
+                              onUpdate?.call(null);
+                              innerSetState.call(() {});
                             },
                           );
                         },
                       ),
-                    ),
-                    Flexible(
-                      child: AddComponent(
-                        text: "Wrap by Component",
+                      AddComponent(
+                        text: "Wrap by\nComponent",
                         onPressed: (BuildContext context) async {
                           /// add parent
                           Component.addComponent(
@@ -163,20 +257,24 @@ class CCButton extends Component {
                             onUpdate: (Component? parent) {
                               if (parent != null) {
                                 parent.child = this;
+                                onDelete = (p0) {
+                                  parent.child = null;
+                                  onUpdate?.call(null);
+                                };
                                 onWrap?.call(parent);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: onDelete!,
                             onWrap: onWrap!,
                             onWrapChildren: onWrapChildren!,
+                            isChild: true,
                           );
                         },
                       ),
-                    ),
-                    Flexible(
-                      child: AddComponent(
-                        text: "Wrap by Children Component",
+                      AddComponent(
+                        text: "Wrap by\nChildren Component",
                         onPressed: (BuildContext context) async {
                           /// add parent
                           Component.addComponent(
@@ -185,30 +283,42 @@ class CCButton extends Component {
                             onUpdate: (Component? parent) {
                               if (parent != null) {
                                 parent.children.add(this);
+                                onDelete = (p0) {
+                                  parent.children.removeWhere((element) => element == this);
+                                  onUpdate?.call(null);
+                                  innerSetState.call(() {});
+                                };
                                 onWrapChildren?.call(parent);
                               }
+                              onUpdate?.call(null);
                               innerSetState.call(() {});
                             },
                             onDelete: onDelete!,
                             onWrap: onWrap!,
                             onWrapChildren: onWrapChildren!,
+                            isChildren: true,
                           );
                         },
                       ),
-                    ),
-                    Flexible(
-                      child: ElevatedButton(
+                      ElevatedButton(
                         onPressed: () {
                           /// add child
                           onDelete?.call(this);
                         },
                         child: Text('Remove'),
                       ),
-                    ),
-                  ],
+                      ElevatedButton(
+                        onPressed: () {
+                          /// add child
+                          Component.copyComponent = copyWith();
+                        },
+                        child: Text('Copy'),
+                      ),
+                    ],
+                  ),
                 ),
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: TextFormField(
                     decoration: InputDecoration(labelText: 'Name'),
@@ -221,9 +331,9 @@ class CCButton extends Component {
                   ),
                 ),
 
-                ///text
+                ///action
                 Container(
-                  width: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: TextFormField(
                     decoration: InputDecoration(labelText: 'Action'),
@@ -236,8 +346,61 @@ class CCButton extends Component {
                   ),
                 ),
 
+                ///data
+                Container(
+                  width: MediaQuery.of(context).size.width * widthDefaultComponent,
+                  alignment: Alignment.centerLeft,
+                  child: TextFormField(
+                    decoration: InputDecoration(labelText: 'Data'),
+                    keyboardType: TextInputType.text,
+                    maxLines: 5,
+                    minLines: 1,
+                    initialValue: data != null ? "$data" : null,
+                    onChanged: (value) {
+                      data = value;
+                      onUpdate?.call(null);
+                    },
+                  ),
+                ),
+
                 SizedBox(height: 5),
-                child?.toWidgetProperties(context) ?? const SizedBox()
+                child?.toWidgetProperties(
+                      context,
+                      onUpdate: (Component? component) {
+                        if (component != null) {
+                          child = component;
+                        }
+                        innerSetState.call(() {});
+                        onUpdate?.call(null);
+                      },
+                      onDelete: (Component component) {
+                        child = null;
+                        onUpdate?.call(null);
+                        innerSetState.call(() {});
+                      },
+                      onWrap: (Component component) {
+                        child = component;
+                        component.onDelete = (p0) {
+                          child = null;
+                          onUpdate?.call(null);
+                          innerSetState.call(() {});
+                        };
+                        onUpdate?.call(null);
+                        innerSetState.call(() {});
+                      },
+                      onWrapChildren: (Component component) {
+                        ///
+                        child = component;
+                        component.onDelete = (p0) {
+                          child = null;
+                          onUpdate?.call(null);
+                          innerSetState.call(() {});
+                        };
+                        onUpdate?.call(null);
+                        innerSetState.call(() {});
+                      },
+                    ) ??
+                    const SizedBox()
               ],
             ),
           );

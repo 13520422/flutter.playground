@@ -12,6 +12,8 @@ import 'package:playground/component/stack.dart';
 import 'package:playground/component/text_view.dart';
 import 'package:playground/widget/diaglog_select_box.dart';
 
+double widthDefaultComponent = 0.3;
+
 abstract class Component {
   final isExpand = false.obs;
   String? name;
@@ -22,12 +24,189 @@ abstract class Component {
   Component? child;
   List<Component> children = [];
   Widget toWidgetViewer(BuildContext context);
-  Widget toWidgetProperties(BuildContext context);
+  Widget toWidgetProperties(
+    BuildContext context, {
+    Function(Component?)? onUpdate,
+    Function(Component)? onDelete,
+    Function(Component)? onWrap,
+    Function(Component)? onWrapChildren,
+  });
   Map<String, dynamic> toJson();
-  void fromJson(Map<String, dynamic> json);
+
   GlobalKey<State<StatefulWidget>>? globalKey;
   Component copyWith();
+
+  static Component? fromJson(Map<String, dynamic> json) {
+    ///
+    var runtimeType = json["runtimeType"];
+    switch (runtimeType) {
+      case "CCButton":
+        return CCButton.fromJson(json);
+      case "CCColumn":
+        return CCColumn.fromJson(json);
+      case "CCContainer":
+        return CCContainer.fromJson(json);
+      case "CCImage":
+        return CCImage.fromJson(json);
+      case "CCPositioned":
+        return CCPositioned.fromJson(json);
+      case "CCRow":
+        return CCRow.fromJson(json);
+      case "CCScrollView":
+        return CCScrollView.fromJson(json);
+      case "CCSizedBox":
+        return CCSizedBox.fromJson(json);
+      case "CCStack":
+        return CCStack.fromJson(json);
+      case "CCTextView":
+        return CCTextView.fromJson(json);
+      default:
+    }
+    return null;
+  }
+
   static Component? copyComponent;
+
+  static DialogSelectBoxModel getComponentToAdd({
+    required int childCount,
+    required Function(Component?) onUpdate,
+    required Function(Component) onDelete,
+    required Function(Component) onWrap,
+    required Function(Component) onWrapChildren,
+    bool isChildren = false,
+    bool isChild = false,
+  }) {
+    var listComponentHasChildren = ["Column", "Row", "Stack"];
+    var listComponentNOTHasChild = ["Image", "Text View", "Check Box", "Text Field", "Select Box"];
+    DialogSelectBoxModel dialogSelectBoxModel = DialogSelectBoxModel(
+      isCloseTop: true,
+      title: "Select Component",
+      itemSelects: [
+        SelectModel<Component?>(
+          name: "SizedBox",
+          value: CCSizedBox(
+              name: "SizedBox $childCount",
+              onUpdate: onUpdate,
+              onDelete: onDelete,
+              onWrap: onWrap,
+              onWrapChildren: onWrapChildren),
+        ),
+        SelectModel<Component?>(
+          name: "Container",
+          value: CCContainer(
+            name: "Container $childCount",
+            onUpdate: onUpdate,
+            onDelete: onDelete,
+            onWrap: onWrap,
+            onWrapChildren: onWrapChildren,
+          ),
+        ),
+        SelectModel<Component?>(
+          name: "Text View",
+          value: CCTextView(
+            name: "TextView $childCount",
+            onUpdate: onUpdate,
+            onDelete: onDelete,
+            onWrap: onWrap,
+            onWrapChildren: onWrapChildren,
+          ),
+        ),
+        SelectModel<Component?>(
+          name: "Image",
+          value: CCImage(
+            name: "Image $childCount",
+            onUpdate: onUpdate,
+            onDelete: onDelete,
+            onWrap: onWrap,
+            onWrapChildren: onWrapChildren,
+          ),
+        ),
+        SelectModel<Component?>(
+          name: "Button",
+          value: CCButton(
+            name: "Button $childCount",
+            onUpdate: onUpdate,
+            onDelete: onDelete,
+            onWrap: onWrap,
+            onWrapChildren: onWrapChildren,
+          ),
+        ),
+        SelectModel<Component?>(
+            name: "Column",
+            value: CCColumn(
+              name: "Column $childCount",
+              onUpdate: onUpdate,
+              onDelete: onDelete,
+              onWrap: onWrap,
+              onWrapChildren: onWrapChildren,
+            )),
+        SelectModel<Component?>(
+            name: "Row",
+            value: CCRow(
+              name: "Row $childCount",
+              onUpdate: onUpdate,
+              onDelete: onDelete,
+              onWrap: onWrap,
+              onWrapChildren: onWrapChildren,
+            )),
+        SelectModel<Component?>(
+            name: "Stack",
+            value: CCStack(
+              name: "Stack $childCount",
+              onUpdate: onUpdate,
+              onDelete: onDelete,
+              onWrap: onWrap,
+              onWrapChildren: onWrapChildren,
+            )),
+        SelectModel<Component?>(
+          name: "Positioned",
+          value: CCPositioned(
+            name: "Positioned $childCount",
+            onUpdate: onUpdate,
+            onDelete: onDelete,
+            onWrap: onWrap,
+            onWrapChildren: onWrapChildren,
+          ),
+        ),
+        SelectModel<Component?>(
+            name: "Scroll View",
+            value: CCScrollView(
+              name: "ScrollView $childCount",
+              onUpdate: onUpdate,
+              onDelete: onDelete,
+              onWrap: onWrap,
+              onWrapChildren: onWrapChildren,
+            )),
+        SelectModel<Component?>(name: "Text Field", value: null),
+        SelectModel<Component?>(name: "Check Box", value: null),
+        SelectModel<Component?>(name: "Select Box", value: null),
+        ...copyComponent != null
+            ? [
+                SelectModel<Component?>(
+                  name: "Paste Component",
+                  value: copyComponent!.copyWith()
+                    ..onUpdate = onUpdate
+                    ..onDelete = onDelete
+                    ..onWrap = onWrap
+                    ..onWrapChildren = onWrapChildren,
+                )
+              ]
+            : []
+      ],
+      isShowSearchInput: true,
+      multiSelect: false,
+    );
+    if (isChild) {
+      dialogSelectBoxModel.listItem.removeWhere((element) =>
+          listComponentHasChildren.contains(element.name) || listComponentNOTHasChild.contains(element.name));
+    }
+    if (isChildren) {
+      dialogSelectBoxModel.listItem.removeWhere((element) => !listComponentHasChildren.contains(element.name));
+    }
+    return dialogSelectBoxModel;
+  }
+
+  ///
   static void addComponent({
     required BuildContext context,
     required int childCount,
@@ -35,115 +214,18 @@ abstract class Component {
     required Function(Component) onDelete,
     required Function(Component) onWrap,
     required Function(Component) onWrapChildren,
+    bool isChildren = false,
+    bool isChild = false,
   }) {
     try {
-      DialogSelectBoxModel dialogSelectBoxModel = DialogSelectBoxModel(
-        isCloseTop: true,
-        title: "Select Component",
-        itemSelects: [
-          SelectModel<Component?>(
-            name: "SizedBox",
-            value: CCSizedBox(
-              name: "SizedBox $childCount",
-              onUpdate: onUpdate,
-              onDelete: onDelete,
-              onWrap: onWrap,
-              onWrapChildren: onWrapChildren,
-            ),
-          ),
-          SelectModel<Component?>(
-            name: "Container",
-            value: CCContainer(
-              name: "Container $childCount",
-              onUpdate: onUpdate,
-              onDelete: onDelete,
-              onWrap: onWrap,
-              onWrapChildren: onWrapChildren,
-            ),
-          ),
-          SelectModel<Component?>(
-            name: "Text",
-            value: CCTextView(
-              name: "TextView $childCount",
-              onUpdate: onUpdate,
-              onDelete: onDelete,
-              onWrap: onWrap,
-              onWrapChildren: onWrapChildren,
-            ),
-          ),
-          SelectModel<Component?>(
-            name: "Image",
-            value: CCImage(
-              name: "Image $childCount",
-              onUpdate: onUpdate,
-              onDelete: onDelete,
-              onWrap: onWrap,
-              onWrapChildren: onWrapChildren,
-            ),
-          ),
-          SelectModel<Component?>(
-            name: "Button",
-            value: CCButton(
-              name: "Button $childCount",
-              onUpdate: onUpdate,
-              onDelete: onDelete,
-              onWrap: onWrap,
-              onWrapChildren: onWrapChildren,
-            ),
-          ),
-          SelectModel<Component?>(
-              name: "Column",
-              value: CCColumn(
-                name: "Column $childCount",
-                onUpdate: onUpdate,
-                onDelete: onDelete,
-                onWrap: onWrap,
-                onWrapChildren: onWrapChildren,
-              )),
-          SelectModel<Component?>(
-              name: "Row",
-              value: CCRow(
-                name: "Row $childCount",
-                onUpdate: onUpdate,
-                onDelete: onDelete,
-                onWrap: onWrap,
-                onWrapChildren: onWrapChildren,
-              )),
-          SelectModel<Component?>(
-              name: "Stack",
-              value: CCStack(
-                name: "Stack $childCount",
-                onUpdate: onUpdate,
-                onDelete: onDelete,
-                onWrap: onWrap,
-                onWrapChildren: onWrapChildren,
-              )),
-          SelectModel<Component?>(
-            name: "Positioned",
-            value: CCPositioned(
-              name: "Positioned $childCount",
-              onUpdate: onUpdate,
-              onDelete: onDelete,
-              onWrap: onWrap,
-              onWrapChildren: onWrapChildren,
-            ),
-          ),
-          SelectModel<Component?>(
-              name: "Scroll View",
-              value: CCScrollView(
-                name: "ScrollView $childCount",
-                onUpdate: onUpdate,
-                onDelete: onDelete,
-                onWrap: onWrap,
-                onWrapChildren: onWrapChildren,
-              )),
-          SelectModel<Component?>(name: "Text Field", value: null),
-          SelectModel<Component?>(name: "Check Box", value: null),
-          SelectModel<Component?>(name: "Select Box", value: null),
-          SelectModel<Component?>(name: "Paste Component", value: copyComponent?.copyWith()),
-        ],
-        isShowSearchInput: true,
-        multiSelect: false,
+      var dialogSelectBoxModel = getComponentToAdd(
+        childCount: childCount,
+        onUpdate: onUpdate,
+        onDelete: onDelete,
+        onWrap: onWrap,
+        onWrapChildren: onWrapChildren,
+        isChildren: isChildren,
+        isChild: isChild,
       );
       RenderBox renderBox = context.findRenderObject() as RenderBox;
       var _size = renderBox.size;
@@ -293,6 +375,52 @@ abstract class Component {
           SelectModel<FontWeight>(name: "${FontWeight.w700}", value: FontWeight.w700),
           SelectModel<FontWeight>(name: "${FontWeight.w800}", value: FontWeight.w800),
           SelectModel<FontWeight>(name: "${FontWeight.w900}", value: FontWeight.w900),
+        ],
+        isShowSearchInput: false,
+        multiSelect: false,
+      );
+      RenderBox renderBox = context.findRenderObject() as RenderBox;
+      var _size = renderBox.size;
+      var _offset = renderBox.localToGlobal(Offset.zero);
+      final overlay = OverlayDialogUtils.showDialogOverLay(
+        context,
+        DialogSelectBoxWeb(
+          model: dialogSelectBoxModel,
+          onUpdate: () {
+            dialogSelectBoxModel.overlayDialog?.removeOverlay();
+            var optionItem = dialogSelectBoxModel.items.where((p0) => p0.check.value).toList().first.value;
+            callBack.call(optionItem);
+          },
+          offset: _offset,
+          size: _size,
+          maxHeightDialog: 500,
+        ),
+        _offset,
+        _size,
+        500,
+        250,
+      );
+      dialogSelectBoxModel.overlayDialog = overlay;
+    } catch (e, t) {
+      // TODO
+      print("error $e");
+      print("error $t");
+    }
+
+    return;
+  }
+
+  static void selectFontStyle({
+    required BuildContext context,
+    required Function(FontStyle) callBack,
+  }) {
+    try {
+      DialogSelectBoxModel dialogSelectBoxModel = DialogSelectBoxModel(
+        isCloseTop: true,
+        title: "Select Font Style",
+        itemSelects: [
+          SelectModel<FontStyle>(name: "${FontStyle.normal}", value: FontStyle.normal),
+          SelectModel<FontStyle>(name: "${FontStyle.italic}", value: FontStyle.italic),
         ],
         isShowSearchInput: false,
         multiSelect: false,
@@ -682,10 +810,14 @@ abstract class Component {
         isCloseTop: true,
         title: "Select ScrollPhysics",
         itemSelects: [
-          SelectModel<ScrollPhysics>(name: "BouncingScrollPhysics", value: BouncingScrollPhysics()),
-          SelectModel<ScrollPhysics>(name: "ClampingScrollPhysics", value: ClampingScrollPhysics()),
-          SelectModel<ScrollPhysics>(name: "NeverScrollableScrollPhysics", value: NeverScrollableScrollPhysics()),
-          SelectModel<ScrollPhysics>(name: "AlwaysScrollableScrollPhysics", value: AlwaysScrollableScrollPhysics()),
+          SelectModel<ScrollPhysics>(
+              name: BouncingScrollPhysics().runtimeType.toString(), value: BouncingScrollPhysics()),
+          SelectModel<ScrollPhysics>(
+              name: ClampingScrollPhysics().runtimeType.toString(), value: ClampingScrollPhysics()),
+          SelectModel<ScrollPhysics>(
+              name: NeverScrollableScrollPhysics().runtimeType.toString(), value: NeverScrollableScrollPhysics()),
+          SelectModel<ScrollPhysics>(
+              name: AlwaysScrollableScrollPhysics().runtimeType.toString(), value: AlwaysScrollableScrollPhysics()),
         ],
         isShowSearchInput: false,
         multiSelect: false,
