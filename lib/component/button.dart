@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:playground/component/component.dart';
 import 'package:playground/widget/add_component.dart';
+import 'package:playground/widget/custom_gesture_detector.dart';
+import 'package:uuid/uuid.dart';
 
 class CCButton extends Component {
-  static String getType() {
-    Type type = CCButton;
-    return type.toString();
-  }
+  static const String runType = "CCButton";
 
   static Map<String, Function(String? data)> actionButon = {};
 
@@ -67,13 +66,16 @@ class CCButton extends Component {
     return component;
   }
 
-  static CCButton? fromWidget(GestureDetector widget) {
+  static CCButton? fromWidget(CustomGestureDetector widget) {
+    var uuid = Uuid();
     // TODO: implement fromJson
     var component = CCButton(
-      name: "GestureDetector",
+      name: uuid.v4(),
       onUpdate: (p0) {},
       onDelete: (p0) {},
     );
+    component.data = widget.data;
+    component.action = widget.action;
     if (widget.child != null) {
       component.child = Component.fromWidget(widget.child!);
     }
@@ -83,7 +85,7 @@ class CCButton extends Component {
   @override
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json["runtimeType"] = runtimeType.toString();
+    json["runtimeType"] = CCButton.runType;
     json["name"] = name;
     json["action"] = action;
     json["data"] = data;
@@ -94,29 +96,21 @@ class CCButton extends Component {
   @override
   Widget toWidgetViewer(BuildContext context) {
     // TODO: implement toWidget
-    return GestureDetector(
+    return CustomGestureDetector(
       key: UniqueKey(),
-      onTap: () {
-        actionButon[action ?? ""]?.call(data);
-      },
-      child: ColoredBox(
-        color: Colors.transparent,
-        child: child?.toWidgetViewer(context),
-      ),
+      action: action,
+      data: data,
+      child: child?.toWidgetViewer(context),
     );
   }
 
   @override
   Widget toWidget(BuildContext context) {
     // TODO: implement toWidget
-    return GestureDetector(
-      onTap: () {
-        actionButon[action ?? ""]?.call(data);
-      },
-      child: ColoredBox(
-        color: Colors.transparent,
-        child: child?.toWidgetViewer(context),
-      ),
+    return CustomGestureDetector(
+      action: action,
+      data: data,
+      child: child?.toWidgetViewer(context),
     );
   }
 

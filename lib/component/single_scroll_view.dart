@@ -5,8 +5,10 @@ import 'package:playground/component/component.dart';
 import 'package:playground/extension/extension.dart';
 import 'package:playground/widget/add_component.dart';
 import 'package:playground/widget/diaglog_select_box.dart';
+import 'package:uuid/uuid.dart';
 
 class CCScrollView extends Component {
+  static const String runType = "CCScrollView";
   Axis scrollDirection = Axis.vertical;
   bool reverse = false;
   EdgeInsets padding = EdgeInsets.zero;
@@ -63,7 +65,7 @@ class CCScrollView extends Component {
     );
     component.reverse = json["reverse"];
     component.scrollDirection = Axis.horizontal.fromJson(json["scrollDirection"]);
-    component.padding = EdgeInsets.zero.fromJson(json["top"]);
+    component.padding = EdgeInsets.zero.fromJson(json["top"]) ?? EdgeInsets.zero;
     if (json["physics"] != null) {
       var ls = [
         SelectModel<ScrollPhysics>(
@@ -87,9 +89,9 @@ class CCScrollView extends Component {
   }
 
   static CCScrollView? fromWidget(SingleChildScrollView widget) {
-    // TODO: implement fromJson
+    var uuid = Uuid();
     var component = CCScrollView(
-      name: "SingleChildScrollView",
+      name: uuid.v4(),
       onUpdate: (p0) {},
       onDelete: (p0) {},
     );
@@ -123,7 +125,7 @@ class CCScrollView extends Component {
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
     Map<String, dynamic> json = {};
-    json["runtimeType"] = runtimeType.toString();
+    json["runtimeType"] = CCScrollView.runType;
     json["name"] = name;
     json["reverse"] = reverse;
     json["physics"] = physics?.runtimeType;

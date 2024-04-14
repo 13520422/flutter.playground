@@ -27,12 +27,15 @@ class _ViewerState extends State<Viewer> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: 10.0),
-        ElevatedButton(
-          onPressed: () {
-            /// View Code
-            widget.onViewCode.call();
-          },
-          child: Text('View Code'),
+        Container(
+          margin: EdgeInsets.only(left: 15),
+          child: ElevatedButton(
+            onPressed: () {
+              /// View Code
+              widget.onViewCode.call();
+            },
+            child: Text('View Code'),
+          ),
         ),
         SizedBox(height: 16.0),
 
@@ -46,18 +49,12 @@ class _ViewerState extends State<Viewer> {
               borderRadius: BorderRadius.all(Radius.circular(8)),
             ),
             child: LayoutBuilder(builder: (context, constrain) {
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Container(
-                    constraints: BoxConstraints(minWidth: constrain.maxWidth),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: widget.listComponent.map((e) => e.toWidgetViewer(context)).toList(),
-                    ),
-                  ),
+              return Container(
+                constraints: BoxConstraints(minWidth: constrain.maxWidth),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: widget.listComponent.map((e) => e.toWidgetViewer(context)).toList(),
                 ),
               );
             }),

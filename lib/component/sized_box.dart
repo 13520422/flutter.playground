@@ -3,8 +3,10 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:playground/component/component.dart';
 import 'package:playground/widget/add_component.dart';
+import 'package:uuid/uuid.dart';
 
 class CCSizedBox extends Component {
+  static const String runType = "CCSizedBox";
   double? width;
   double? height;
 
@@ -62,9 +64,9 @@ class CCSizedBox extends Component {
   }
 
   static CCSizedBox? fromWidget(SizedBox widget) {
-    // TODO: implement fromJson
+    var uuid = Uuid();
     var component = CCSizedBox(
-      name: "SizedBox",
+      name: uuid.v4(),
       onUpdate: (p0) {},
       onDelete: (p0) {},
     );
@@ -80,7 +82,7 @@ class CCSizedBox extends Component {
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
     Map<String, dynamic> json = {};
-    json["runtimeType"] = runtimeType.toString();
+    json["runtimeType"] = CCSizedBox.runType;
     json["name"] = name;
     json["width"] = width;
     json["height"] = height;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:playground/component/component.dart';
+import 'package:playground/playground/widget/import_view.dart';
 import 'package:playground/playground/widget/properties.dart';
 import 'package:playground/playground/widget/view_code.dart';
 import 'package:playground/playground/widget/viewer.dart';
@@ -13,7 +14,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final List<Component> listComponent = [];
 
-  bool isViewCode = false;
+  int mode = 1;
   void Function(void Function())? innerSetStateViewCode;
   void Function(void Function())? innerSetStateViewDesign;
 
@@ -41,38 +42,59 @@ class _HomePageState extends State<HomePage> {
           weights = w.toList();
         },
         children: [
-          isViewCode
+          mode == 0
               ? ViewCode(
                   key: UniqueKey(),
                   listComponet: listComponent,
                   onViewDesign: () {
                     setState(() {
-                      isViewCode = !isViewCode;
+                      mode = 1;
                     });
                   },
                   innerSetState: (f) {
                     innerSetStateViewCode = f;
                   },
-                )
-              : Viewer(
-                  listComponent: listComponent,
-                  onViewCode: () {
+                  onViewImport: () {
                     setState(() {
-                      isViewCode = !isViewCode;
+                      mode = 2;
                     });
                   },
-                  innerSetState: (f) {
-                    innerSetStateViewDesign = f;
-                  },
-                ),
+                )
+              : mode == 1
+                  ? Viewer(
+                      //mode==1
+                      listComponent: listComponent,
+                      onViewCode: () {
+                        setState(() {
+                          mode = 0;
+                        });
+                      },
+                      innerSetState: (f) {
+                        innerSetStateViewDesign = f;
+                      },
+                    )
+                  : ImportComponent(
+                      //mode==2
+                      onSubmit: (List<Component> cpts) {
+                        setState(() {
+                          mode = 1;
+                          listComponent.addAll(cpts);
+                        });
+                      },
+                      onCancel: () {
+                        setState(() {
+                          mode = 1;
+                        });
+                      },
+                    ),
           Properties(
             listComponent: listComponent,
             onUpdate: () {
               // print("update widget");
               // setState(() {});
-              if (isViewCode) {
+              if (mode == 0) {
                 innerSetStateViewCode?.call(() {});
-              } else {
+              } else if (mode == 1) {
                 innerSetStateViewDesign?.call(() {});
               }
             },

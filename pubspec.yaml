@@ -39,6 +39,7 @@ dependencies:
   get:
   flutter_svg:
   lottie: 
+  uuid:
 
 dev_dependencies:
   flutter_test:

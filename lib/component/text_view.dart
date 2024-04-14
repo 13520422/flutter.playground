@@ -4,8 +4,10 @@ import 'package:get/get.dart';
 import 'package:playground/component/component.dart';
 import 'package:playground/extension/extension.dart';
 import 'package:playground/widget/add_component.dart';
+import 'package:uuid/uuid.dart';
 
 class CCTextView extends Component {
+  static const String runType = "CCTextView";
   String? text;
   double? fontSize;
   Color? color;
@@ -87,9 +89,9 @@ class CCTextView extends Component {
   }
 
   static CCTextView? fromWidget(Text widget) {
-    // TODO: implement fromJson
+    var uuid = Uuid();
     var component = CCTextView(
-      name: "Text",
+      name: uuid.v4(),
       onUpdate: (p0) {},
       onDelete: (p0) {},
     );
@@ -109,7 +111,7 @@ class CCTextView extends Component {
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
     Map<String, dynamic> json = {};
-    json["runtimeType"] = runtimeType.toString();
+    json["runtimeType"] = CCTextView.runType;
     json["name"] = name;
     json["text"] = text;
     json["fontSize"] = fontSize;

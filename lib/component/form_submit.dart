@@ -5,8 +5,10 @@ import 'package:playground/component/component.dart';
 import 'package:playground/extension/extension.dart';
 import 'package:playground/widget/add_component.dart';
 import 'package:playground/widget/custom_form.dart';
+import 'package:uuid/uuid.dart';
 
 class CCFormSubmit extends Component {
+  static const String runType = "CCFormSubmit";
   String? formId;
   AutovalidateMode? autovalidateMode;
 
@@ -64,9 +66,10 @@ class CCFormSubmit extends Component {
   }
 
   static CCFormSubmit? fromWidget(CustomForm widget) {
+    var uuid = Uuid();
     // TODO: implement fromJson
     var component = CCFormSubmit(
-      name: "CustomForm",
+      name: uuid.v4(),
       onUpdate: (p0) {},
       onDelete: (p0) {},
     );
@@ -81,7 +84,7 @@ class CCFormSubmit extends Component {
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
     Map<String, dynamic> json = {};
-    json["runtimeType"] = runtimeType.toString();
+    json["runtimeType"] = CCFormSubmit.runType;
     json["name"] = name;
     json["formId"] = formId;
     json["autovalidateMode"] = autovalidateMode?.name;

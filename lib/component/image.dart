@@ -14,6 +14,7 @@ enum ImageType {
 }
 
 class CCImage extends Component {
+  static const String runType = "CCImage";
   double? width;
   double? height;
   String? url;
@@ -77,7 +78,7 @@ class CCImage extends Component {
     component.url = json["url"];
     component.fit = BoxFit.cover.fromJson(json["fit"]);
     component.imageType = ImageType.jpg.fromJson(json["imageType"]);
-    component.borderRadius = BorderRadius.zero.fromJson(json["borderRadius"]);
+    component.borderRadius = BorderRadius.zero.fromJson(json["borderRadius"]) ?? BorderRadius.zero;
     return component;
   }
 
@@ -141,7 +142,7 @@ class CCImage extends Component {
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
     Map<String, dynamic> json = {};
-    json["runtimeType"] = runtimeType.toString();
+    json["runtimeType"] = CCImage.runType;
     json["name"] = name;
     json["width"] = width;
     json["height"] = height;

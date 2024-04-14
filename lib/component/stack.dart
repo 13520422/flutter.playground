@@ -3,8 +3,10 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:playground/component/component.dart';
 import 'package:playground/widget/add_component.dart';
+import 'package:uuid/uuid.dart';
 
 class CCStack extends Component {
+  static const String runType = "CCStack";
   CCStack({
     required String name,
     required Function(Component?) onUpdate,
@@ -38,9 +40,9 @@ class CCStack extends Component {
   }
 
   static CCStack? fromWidget(Stack widget) {
-    // TODO: implement fromJson
+    var uuid = Uuid();
     var component = CCStack(
-      name: "Stack",
+      name: uuid.v4(),
       onUpdate: (p0) {},
       onDelete: (p0) {},
     );
@@ -60,7 +62,7 @@ class CCStack extends Component {
     // TODO: implement toJson
     Map<String, dynamic> json = {};
     json["name"] = name;
-    json["runtimeType"] = runtimeType.toString();
+    json["runtimeType"] = CCStack.runType;
     json["children"] = children.map((e) => e.toJson()).toList();
     return json;
   }

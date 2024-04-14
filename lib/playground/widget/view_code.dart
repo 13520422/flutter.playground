@@ -7,7 +7,13 @@ class ViewCode extends StatefulWidget {
   final List<Component> listComponet;
   final Function onViewDesign;
   void Function(void Function(void Function()))? innerSetState;
-  ViewCode({required this.listComponet, required this.onViewDesign, this.innerSetState, super.key});
+  final Function onViewImport;
+  ViewCode(
+      {required this.listComponet,
+      required this.onViewDesign,
+      this.innerSetState,
+      required this.onViewImport,
+      super.key});
 
   @override
   State<ViewCode> createState() => _ViewCodeState();
@@ -29,12 +35,26 @@ class _ViewCodeState extends State<ViewCode> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: 10.0),
-        ElevatedButton(
-          onPressed: () {
-            /// View Code
-            widget.onViewDesign.call();
-          },
-          child: Text('View Design'),
+        Container(
+          margin: EdgeInsets.only(left: 15),
+          child: Row(
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  /// View Code
+                  widget.onViewDesign.call();
+                },
+                child: Text('View Design'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  /// View Code
+                  widget.onViewImport.call();
+                },
+                child: Text('Import'),
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 16.0),
         Expanded(

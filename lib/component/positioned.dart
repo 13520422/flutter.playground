@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:playground/component/component.dart';
 import 'package:playground/widget/add_component.dart';
+import 'package:uuid/uuid.dart';
 
 class CCPositioned extends Component {
+  static const String runType = "CCPositioned";
   double? width;
   double? height;
   double? left, right, top, bottom;
@@ -74,9 +76,10 @@ class CCPositioned extends Component {
   }
 
   static CCPositioned? fromWidget(Positioned widget) {
+    var uuid = Uuid();
     // TODO: implement fromJson
     var component = CCPositioned(
-      name: "Positioned",
+      name: uuid.v4(),
       onUpdate: (p0) {},
       onDelete: (p0) {},
     );
@@ -95,7 +98,7 @@ class CCPositioned extends Component {
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
     Map<String, dynamic> json = {};
-    json["runtimeType"] = runtimeType.toString();
+    json["runtimeType"] = CCPositioned.runType;
     json["name"] = name;
     json["width"] = width;
     json["height"] = height;

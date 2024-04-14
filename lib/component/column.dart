@@ -4,8 +4,10 @@ import 'package:get/get.dart';
 import 'package:playground/component/component.dart';
 import 'package:playground/extension/extension.dart';
 import 'package:playground/widget/add_component.dart';
+import 'package:uuid/uuid.dart';
 
 class CCColumn extends Component {
+  static const String runType = "CCColumn";
   MainAxisAlignment? mainAxisAlignment;
   MainAxisSize? mainAxisSize;
   CrossAxisAlignment? crossAxisAlignment;
@@ -71,9 +73,10 @@ class CCColumn extends Component {
   }
 
   static CCColumn? fromWidget(Column widget) {
+    var uuid = Uuid();
     // TODO: implement fromJson
     var component = CCColumn(
-      name: "Column",
+      name: uuid.v4(),
       onUpdate: (p0) {},
       onDelete: (p0) {},
     );
@@ -94,7 +97,7 @@ class CCColumn extends Component {
   @override
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json["runtimeType"] = runtimeType.toString();
+    json["runtimeType"] = CCColumn.runType;
     json["name"] = name;
     json["mainAxisAlignment"] = mainAxisAlignment?.name;
     json["mainAxisSize"] = mainAxisSize?.name;

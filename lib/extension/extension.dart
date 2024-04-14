@@ -12,7 +12,10 @@ extension borderRadius on BorderRadius {
     };
   }
 
-  BorderRadius fromJson(Map<String, dynamic> json) {
+  BorderRadius? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
     var bottomRight = json["bottomRight"] ?? 0;
     var bottomLeft = json["bottomLeft"] ?? 0;
     var topLeft = json["topLeft"] ?? 0;
@@ -109,7 +112,10 @@ extension edgeInsets on EdgeInsets {
     };
   }
 
-  EdgeInsets fromJson(Map<String, dynamic> json) {
+  EdgeInsets? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
     var left = json["left"] ?? 0;
     var right = json["right"] ?? 0;
     var top = json["top"] ?? 0;
@@ -132,7 +138,10 @@ extension alignment on Alignment {
     };
   }
 
-  Alignment? fromJson(Map<String, dynamic> json) {
+  Alignment? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
     var x = json["x"];
     var y = json["y"];
     if (x != null && y != null) {
@@ -150,7 +159,10 @@ extension offsett on Offset {
     };
   }
 
-  Offset? fromJson(Map<String, dynamic> json) {
+  Offset? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
     var dx = json["dx"];
     var dy = json["dy"];
     if (dx != null && dy != null) {
@@ -171,7 +183,10 @@ extension boxShadow on BoxShadow {
     };
   }
 
-  BoxShadow? fromJson(Map<String, dynamic> json) {
+  BoxShadow? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
     var color = json["color"] ?? "0x00000000";
     var offset = Offset.zero.fromJson(json["offset"]);
     var blurRadius = json["blurRadius"] ?? 0.0;

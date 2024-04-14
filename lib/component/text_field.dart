@@ -5,8 +5,12 @@ import 'package:playground/component/component.dart';
 import 'package:playground/extension/extension.dart';
 import 'package:playground/widget/add_component.dart';
 import 'package:playground/widget/custom_form.dart';
+import 'package:playground/widget/custom_text_form_field.dart';
+import 'package:uuid/uuid.dart';
 
-class CCTextFormFeild extends Component {
+class CCTextFormField extends Component {
+  static const String runType = "CCTextFormField";
+
   ///
   String? formId;
 
@@ -53,7 +57,7 @@ class CCTextFormFeild extends Component {
   Border? borderOnError;
   TextInputType? keyboardType;
 
-  CCTextFormFeild({
+  CCTextFormField({
     required String name,
     required Function(Component?) onUpdate,
     required Function(Component) onDelete,
@@ -105,7 +109,7 @@ class CCTextFormFeild extends Component {
     Border? borderOnError,
     TextInputType? keyboardType,
   }) {
-    var component = CCTextFormFeild(
+    var component = CCTextFormField(
       name: name ?? this.name!,
       onUpdate: onUpdate ?? this.onUpdate!,
       onDelete: onDelete ?? this.onDelete!,
@@ -159,9 +163,9 @@ class CCTextFormFeild extends Component {
     return component;
   }
 
-  static CCTextFormFeild? fromJson(Map<String, dynamic> json) {
+  static CCTextFormField? fromJson(Map<String, dynamic> json) {
     // TODO: implement fromJson
-    var component = CCTextFormFeild(
+    var component = CCTextFormField(
       name: json["name"],
       onUpdate: (p0) {},
       onDelete: (p0) {},
@@ -206,31 +210,66 @@ class CCTextFormFeild extends Component {
     component.isValidate = json["isValidate"];
     component.textAlign = TextAlign.center.fromJson(json["textAlign"]);
     component.maxLine = json["maxLine"];
-    component.padding = EdgeInsets.zero.fromJson(json["padding"]);
+    component.padding = EdgeInsets.zero.fromJson(json["padding"]) ?? EdgeInsets.zero;
 
-    component.borderRadius = BorderRadius.zero.fromJson(json["borderRadius"]);
+    component.borderRadius = BorderRadius.zero.fromJson(json["borderRadius"]) ?? BorderRadius.zero;
     component.border = Border().fromJson(json["border"]);
     component.borderOnFocus = Border().fromJson(json["borderOnFocus"]);
     component.borderOnError = Border().fromJson(json["borderOnError"]);
     component.keyboardType = TextInputType.none.fromJson(json["keyboardType"]);
   }
 
-  static CCTextFormFeild? fromWidget(TextFormField widget) {
-    // TODO: implement fromJson
-    var component = CCTextFormFeild(
-      name: "TextFormField",
+  static CCTextFormField? fromWidget(CustomTextFormField widget) {
+    var uuid = Uuid();
+    var component = CCTextFormField(
+      name: uuid.v4(),
       onUpdate: (p0) {},
       onDelete: (p0) {},
     );
-    // component.text = widget.data;
-    // component.fontSize = widget.style?.fontSize;
-    // component.fontFamily = widget.style?.fontFamily;
-    // component.fontWeight = widget.style?.fontWeight;
-    // component.textAlign = widget.textAlign;
-    // component.textOverflow = widget.overflow;
-    // component.maxLine = widget.maxLines;
-    // component.fontStyle = widget.style?.fontStyle;
-    // component.color = widget.style?.color;
+    component.formId = widget.formId;
+
+    ///
+    component.label = widget.label;
+    component.hintText = widget.hintText;
+    component.validateError = widget.validateError;
+
+    ///
+    component.fontFamily = widget.fontFamily;
+
+    ///text style input
+    component.fontSize = widget.fontSize;
+    component.color = widget.color;
+    component.fontStyle = widget.fontStyle;
+    component.fontWeight = widget.fontWeight;
+
+    //text style label
+    component.fontSizeLabel = widget.fontSizeLabel;
+    component.colorLabel = widget.colorLabel;
+    component.fontStyleLabel = widget.fontStyleLabel;
+    component.fontWeightLabel = widget.fontWeightLabel;
+
+    //text style hint
+    component.fontSizeHint = widget.fontSizeHint;
+    component.colorHint = widget.colorHint;
+    component.fontStyleHint = widget.fontStyleHint;
+    component.fontWeightHint = widget.fontWeightHint;
+
+    //text style error
+    component.fontSizeError = widget.fontSizeError;
+    component.colorError = widget.colorError;
+    component.fontStyleError = widget.fontStyleError;
+    component.fontWeightError = widget.fontWeightError;
+
+    ///
+    component.isValidate = widget.isValidate;
+    component.textAlign = widget.textAlign;
+    component.maxLine = widget.maxLine;
+    component.padding = widget.padding;
+    component.borderRadius = widget.borderRadius;
+    component.border = widget.border;
+    component.borderOnFocus = widget.borderOnFocus;
+    component.borderOnError = widget.borderOnError;
+    component.keyboardType = widget.keyboardType;
     return component;
   }
 
@@ -238,7 +277,7 @@ class CCTextFormFeild extends Component {
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
     Map<String, dynamic> json = {};
-    json["runtimeType"] = runtimeType.toString();
+    json["runtimeType"] = CCTextFormField.runType;
     json["name"] = name;
     json["formId"] = formId;
     json["label"] = label;
@@ -287,93 +326,38 @@ class CCTextFormFeild extends Component {
   @override
   Widget toWidgetViewer(BuildContext context) {
     // TODO: implement toWidget
-    return TextFormField(
+    return CustomTextFormField(
       key: UniqueKey(),
-      style: TextStyle(
-        fontFamily: fontFamily,
-        fontSize: fontSize,
-        fontWeight: fontWeight,
-        fontStyle: fontStyle,
-        color: color,
-      ),
-      textAlign: textAlign ?? TextAlign.start,
-      decoration: InputDecoration(
-        contentPadding: padding,
-        labelText: label,
-        labelStyle: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: fontSizeLabel,
-          fontWeight: fontWeightLabel,
-          fontStyle: fontStyleLabel,
-          color: colorLabel,
-        ),
-        hintText: hintText,
-        hintStyle: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: fontSizeHint,
-          fontWeight: fontWeightHint,
-          fontStyle: fontStyleHint,
-          color: colorHint,
-        ),
-        errorStyle: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: fontSizeError,
-          fontWeight: fontWeightError,
-          fontStyle: fontStyleError,
-          color: colorError,
-        ),
-        border: border?.top != null
-            ? OutlineInputBorder(
-                borderRadius: borderRadius,
-                borderSide: BorderSide(
-                  color: border!.top.color,
-                  width: border!.top.width,
-                ),
-              )
-            : border?.bottom != null
-                ? OutlineInputBorder(
-                    borderRadius: borderRadius,
-                    borderSide: BorderSide(
-                      color: border!.top.color,
-                      width: border!.top.width,
-                    ),
-                  )
-                : null,
-        focusedBorder: borderOnFocus?.top != null
-            ? OutlineInputBorder(
-                borderRadius: borderRadius,
-                borderSide: BorderSide(
-                  color: borderOnFocus!.top.color,
-                  width: borderOnFocus!.top.width,
-                ),
-              )
-            : borderOnFocus?.bottom != null
-                ? OutlineInputBorder(
-                    borderRadius: borderRadius,
-                    borderSide: BorderSide(
-                      color: borderOnFocus!.top.color,
-                      width: borderOnFocus!.top.width,
-                    ),
-                  )
-                : null,
-        errorBorder: borderOnError?.top != null
-            ? OutlineInputBorder(
-                borderRadius: borderRadius,
-                borderSide: BorderSide(
-                  color: borderOnError!.top.color,
-                  width: borderOnError!.top.width,
-                ),
-              )
-            : borderOnError?.bottom != null
-                ? OutlineInputBorder(
-                    borderRadius: borderRadius,
-                    borderSide: BorderSide(
-                      color: borderOnError!.top.color,
-                      width: borderOnError!.top.width,
-                    ),
-                  )
-                : null,
-      ),
+      label: label,
+      hintText: hintText,
+      validateError: validateError,
+      fontFamily: fontFamily,
+      fontSize: fontSize,
+      color: color,
+      fontStyle: fontStyle,
+      fontWeight: fontWeight,
+      fontSizeLabel: fontSizeLabel,
+      colorLabel: colorLabel,
+      fontStyleLabel: fontStyleLabel,
+      fontWeightLabel: fontWeightLabel,
+      fontSizeHint: fontSizeHint,
+      colorHint: colorHint,
+      fontStyleHint: fontStyleHint,
+      fontWeightHint: fontWeightHint,
+      fontSizeError: fontSizeError,
+      colorError: colorError,
+      fontStyleError: fontStyleError,
+      fontWeightError: fontWeightError,
+      isValidate: isValidate,
+      textAlign: textAlign,
+      maxLine: maxLine,
+      padding: padding,
+      borderRadius: borderRadius,
+      border: border,
+      borderOnFocus: borderOnFocus,
+      borderOnError: borderOnError,
+      keyboardType: keyboardType,
+      formId: formId,
       validator: (value) {
         if (isValidate == true) {
           if ((value ?? "").trim().isNotEmpty) {
@@ -386,101 +370,43 @@ class CCTextFormFeild extends Component {
       onSaved: (newValue) {
         formData[formId]?[name ?? ""] = newValue;
       },
-      maxLines: maxLine,
-      minLines: maxLine != null ? 1 : null,
-      keyboardType: keyboardType,
     );
   }
 
   @override
   Widget toWidget(BuildContext context) {
     // TODO: implement toWidget
-    return TextFormField(
-      style: TextStyle(
-        fontFamily: fontFamily,
-        fontSize: fontSize,
-        fontWeight: fontWeight,
-        fontStyle: fontStyle,
-        color: color,
-      ),
-      textAlign: textAlign ?? TextAlign.start,
-      decoration: InputDecoration(
-        contentPadding: padding,
-        labelText: label,
-        labelStyle: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: fontSizeLabel,
-          fontWeight: fontWeightLabel,
-          fontStyle: fontStyleLabel,
-          color: colorLabel,
-        ),
-        hintText: hintText,
-        hintStyle: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: fontSizeHint,
-          fontWeight: fontWeightHint,
-          fontStyle: fontStyleHint,
-          color: colorHint,
-        ),
-        errorStyle: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: fontSizeError,
-          fontWeight: fontWeightError,
-          fontStyle: fontStyleError,
-          color: colorError,
-        ),
-        border: border?.top != null
-            ? OutlineInputBorder(
-                borderRadius: borderRadius,
-                borderSide: BorderSide(
-                  color: border!.top.color,
-                  width: border!.top.width,
-                ),
-              )
-            : border?.bottom != null
-                ? OutlineInputBorder(
-                    borderRadius: borderRadius,
-                    borderSide: BorderSide(
-                      color: border!.top.color,
-                      width: border!.top.width,
-                    ),
-                  )
-                : null,
-        focusedBorder: borderOnFocus?.top != null
-            ? OutlineInputBorder(
-                borderRadius: borderRadius,
-                borderSide: BorderSide(
-                  color: borderOnFocus!.top.color,
-                  width: borderOnFocus!.top.width,
-                ),
-              )
-            : borderOnFocus?.bottom != null
-                ? OutlineInputBorder(
-                    borderRadius: borderRadius,
-                    borderSide: BorderSide(
-                      color: borderOnFocus!.top.color,
-                      width: borderOnFocus!.top.width,
-                    ),
-                  )
-                : null,
-        errorBorder: borderOnError?.top != null
-            ? OutlineInputBorder(
-                borderRadius: borderRadius,
-                borderSide: BorderSide(
-                  color: borderOnError!.top.color,
-                  width: borderOnError!.top.width,
-                ),
-              )
-            : borderOnError?.bottom != null
-                ? OutlineInputBorder(
-                    borderRadius: borderRadius,
-                    borderSide: BorderSide(
-                      color: borderOnError!.top.color,
-                      width: borderOnError!.top.width,
-                    ),
-                  )
-                : null,
-      ),
+    return CustomTextFormField(
+      label: label,
+      hintText: hintText,
+      validateError: validateError,
+      fontFamily: fontFamily,
+      fontSize: fontSize,
+      color: color,
+      fontStyle: fontStyle,
+      fontWeight: fontWeight,
+      fontSizeLabel: fontSizeLabel,
+      colorLabel: colorLabel,
+      fontStyleLabel: fontStyleLabel,
+      fontWeightLabel: fontWeightLabel,
+      fontSizeHint: fontSizeHint,
+      colorHint: colorHint,
+      fontStyleHint: fontStyleHint,
+      fontWeightHint: fontWeightHint,
+      fontSizeError: fontSizeError,
+      colorError: colorError,
+      fontStyleError: fontStyleError,
+      fontWeightError: fontWeightError,
+      isValidate: isValidate,
+      textAlign: textAlign,
+      maxLine: maxLine,
+      padding: padding,
+      borderRadius: borderRadius,
+      border: border,
+      borderOnFocus: borderOnFocus,
+      borderOnError: borderOnError,
+      keyboardType: keyboardType,
+      formId: formId,
       validator: (value) {
         if (isValidate == true) {
           if ((value ?? "").trim().isNotEmpty) {
@@ -493,9 +419,6 @@ class CCTextFormFeild extends Component {
       onSaved: (newValue) {
         formData[formId]?[name ?? ""] = newValue;
       },
-      maxLines: maxLine,
-      minLines: maxLine != null ? 1 : null,
-      keyboardType: keyboardType,
     );
   }
 

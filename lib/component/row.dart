@@ -4,8 +4,10 @@ import 'package:get/get.dart';
 import 'package:playground/component/component.dart';
 import 'package:playground/extension/extension.dart';
 import 'package:playground/widget/add_component.dart';
+import 'package:uuid/uuid.dart';
 
 class CCRow extends Component {
+  static const String runType = "CCRow";
   MainAxisAlignment? mainAxisAlignment;
   MainAxisSize? mainAxisSize;
   CrossAxisAlignment? crossAxisAlignment;
@@ -72,8 +74,9 @@ class CCRow extends Component {
 
   static CCRow? fromWidget(Row widget) {
     // TODO: implement fromJson
+    var uuid = Uuid();
     var component = CCRow(
-      name: "Row",
+      name: uuid.v4(),
       onUpdate: (p0) {},
       onDelete: (p0) {},
     );
@@ -95,7 +98,7 @@ class CCRow extends Component {
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
     Map<String, dynamic> json = {};
-    json["runtimeType"] = runtimeType.toString();
+    json["runtimeType"] = CCRow.runType;
     json["name"] = name;
     json["mainAxisAlignment"] = mainAxisAlignment?.name;
     json["mainAxisSize"] = mainAxisSize?.name;

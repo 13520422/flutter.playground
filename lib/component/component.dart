@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:playground/component/button.dart';
+import 'package:playground/component/check_box.dart';
 import 'package:playground/component/column.dart';
 import 'package:playground/component/container.dart';
 import 'package:playground/component/form_submit.dart';
@@ -14,8 +15,12 @@ import 'package:playground/component/sized_box.dart';
 import 'package:playground/component/stack.dart';
 import 'package:playground/component/text_field.dart';
 import 'package:playground/component/text_view.dart';
+import 'package:playground/widget/custom_check_box.dart';
 import 'package:playground/widget/custom_form.dart';
+import 'package:playground/widget/custom_gesture_detector.dart';
+import 'package:playground/widget/custom_text_form_field.dart';
 import 'package:playground/widget/diaglog_select_box.dart';
+import 'package:uuid/uuid.dart';
 
 double widthDefaultComponent = 0.3;
 
@@ -46,29 +51,31 @@ abstract class Component {
     ///
     var runtimeType = json["runtimeType"];
     switch (runtimeType) {
-      case "CCButton":
+      case CCButton.runType:
         return CCButton.fromJson(json);
-      case "CCColumn":
+      case CCColumn.runType:
         return CCColumn.fromJson(json);
-      case "CCContainer":
+      case CCContainer.runType:
         return CCContainer.fromJson(json);
-      case "CCImage":
+      case CCImage.runType:
         return CCImage.fromJson(json);
-      case "CCPositioned":
+      case CCPositioned.runType:
         return CCPositioned.fromJson(json);
-      case "CCRow":
+      case CCRow.runType:
         return CCRow.fromJson(json);
-      case "CCScrollView":
+      case CCScrollView.runType:
         return CCScrollView.fromJson(json);
-      case "CCSizedBox":
+      case CCSizedBox.runType:
         return CCSizedBox.fromJson(json);
-      case "CCStack":
+      case CCStack.runType:
         return CCStack.fromJson(json);
-      case "CCTextView":
+      case CCTextView.runType:
         return CCTextView.fromJson(json);
-      case "CCTextFormFeild":
-        return CCTextFormFeild.fromJson(json);
-      case "CCFormSubmit":
+      case CCTextFormField.runType:
+        return CCTextFormField.fromJson(json);
+      case CCCheckBoxFormField.runType:
+        return CCCheckBoxFormField.fromJson(json);
+      case CCFormSubmit.runType:
         return CCFormSubmit.fromJson(json);
       default:
     }
@@ -79,8 +86,8 @@ abstract class Component {
     ///
     var runtimeType = widget.runtimeType;
     switch (runtimeType) {
-      case GestureDetector:
-        return CCButton.fromWidget(widget as GestureDetector);
+      case CustomGestureDetector:
+        return CCButton.fromWidget(widget as CustomGestureDetector);
       case Column:
         return CCColumn.fromWidget(widget as Column);
       case Container:
@@ -103,8 +110,10 @@ abstract class Component {
         return CCStack.fromWidget(widget as Stack);
       case Text:
         return CCTextView.fromWidget(widget as Text);
-      case TextFormField:
-        return CCTextFormFeild.fromWidget(widget as TextFormField);
+      case CustomTextFormField:
+        return CCTextFormField.fromWidget(widget as CustomTextFormField);
+      case CustomCheckBox:
+        return CCCheckBoxFormField.fromWidget(widget as CustomCheckBox);
       case CustomForm:
         return CCFormSubmit.fromWidget(widget as CustomForm);
       default:
@@ -226,7 +235,7 @@ abstract class Component {
             )),
         SelectModel<Component?>(
           name: "Text Field",
-          value: CCTextFormFeild(
+          value: CCTextFormField(
             name: "CCTextFormFeild $childCount",
             onUpdate: onUpdate,
             onDelete: onDelete,
@@ -234,7 +243,16 @@ abstract class Component {
             onWrapChildren: onWrapChildren,
           ),
         ),
-        SelectModel<Component?>(name: "Check Box", value: null),
+        SelectModel<Component?>(
+          name: "Check Box",
+          value: CCCheckBoxFormField(
+            name: "CCCheckBoxFormField $childCount",
+            onUpdate: onUpdate,
+            onDelete: onDelete,
+            onWrap: onWrap,
+            onWrapChildren: onWrapChildren,
+          ),
+        ),
         SelectModel<Component?>(name: "Select Box", value: null),
         SelectModel<Component?>(
             name: "FormSubmit",

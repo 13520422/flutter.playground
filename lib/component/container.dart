@@ -3,8 +3,10 @@ import 'package:playground/extension/extension.dart';
 import 'package:get/get.dart';
 import 'package:playground/component/component.dart';
 import 'package:playground/widget/add_component.dart';
+import 'package:uuid/uuid.dart';
 
 class CCContainer extends Component {
+  static const String runType = "CCContainer";
   double? width;
   double? height;
   Alignment? alignment;
@@ -79,11 +81,11 @@ class CCContainer extends Component {
     component.width = json["width"];
     component.height = json["height"];
     component.alignment = Alignment.center.fromJson(json["alignment"]);
-    component.padding = EdgeInsets.zero.fromJson(json["padding"]);
-    component.margin = EdgeInsets.zero.fromJson(json["margin"]);
+    component.padding = EdgeInsets.zero.fromJson(json["padding"]) ?? EdgeInsets.zero;
+    component.margin = EdgeInsets.zero.fromJson(json["margin"]) ?? EdgeInsets.zero;
     component.border = Border().fromJson(json["border"]);
     component.color = json["color"] != null ? Color(int.parse(json["color"])) : null;
-    component.borderRadius = BorderRadius.zero.fromJson(json["borderRadius"]);
+    component.borderRadius = BorderRadius.zero.fromJson(json["borderRadius"]) ?? BorderRadius.zero;
     component.shape = BoxShape.rectangle.fromJson(json["shape"]);
     component.boxShadow = BoxShadow().fromJson(json["boxShadow"]);
     if (json["child"] != null) {
@@ -93,9 +95,10 @@ class CCContainer extends Component {
   }
 
   static CCContainer? fromWidget(Container widget) {
+    var uuid = Uuid();
     // TODO: implement fromJson
     var component = CCContainer(
-      name: "Container",
+      name: uuid.v4(),
       onUpdate: (p0) {},
       onDelete: (p0) {},
     );
@@ -127,7 +130,7 @@ class CCContainer extends Component {
   Map<String, dynamic> toJson() {
     // TODO: implement toJson
     Map<String, dynamic> json = {};
-    json["runtimeType"] = runtimeType.toString();
+    json["runtimeType"] = CCContainer.runType;
     json["name"] = name;
     json["width"] = width;
     json["height"] = height;
