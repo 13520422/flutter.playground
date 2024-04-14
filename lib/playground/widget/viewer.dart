@@ -50,7 +50,7 @@ class _ViewerState extends State<Viewer> {
             ),
             child: LayoutBuilder(builder: (context, constrain) {
               return Container(
-                constraints: BoxConstraints(minWidth: constrain.maxWidth),
+                constraints: BoxConstraints(minWidth: constrain.maxWidth, maxHeight: constrain.maxHeight),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
