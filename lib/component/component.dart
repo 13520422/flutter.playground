@@ -6,6 +6,8 @@ import 'package:playground/component/button.dart';
 import 'package:playground/component/check_box.dart';
 import 'package:playground/component/column.dart';
 import 'package:playground/component/container.dart';
+import 'package:playground/component/expanded.dart';
+import 'package:playground/component/flexible.dart';
 import 'package:playground/component/form_submit.dart';
 import 'package:playground/component/image.dart';
 import 'package:playground/component/positioned.dart';
@@ -20,7 +22,6 @@ import 'package:playground/widget/custom_form.dart';
 import 'package:playground/widget/custom_gesture_detector.dart';
 import 'package:playground/widget/custom_text_form_field.dart';
 import 'package:playground/widget/diaglog_select_box.dart';
-import 'package:uuid/uuid.dart';
 
 double widthDefaultComponent = 0.3;
 
@@ -77,6 +78,10 @@ abstract class Component {
         return CCCheckBoxFormField.fromJson(json);
       case CCFormSubmit.runType:
         return CCFormSubmit.fromJson(json);
+      case CCExpanded.runType:
+        return CCExpanded.fromJson(json);
+      case CCFlexible.runType:
+        return CCFlexible.fromJson(json);
       default:
     }
     return null;
@@ -114,6 +119,10 @@ abstract class Component {
         return CCTextFormField.fromWidget(widget as CustomTextFormField);
       case CustomCheckBox:
         return CCCheckBoxFormField.fromWidget(widget as CustomCheckBox);
+      case Flexible:
+        return CCFlexible.fromWidget(widget as Flexible);
+      case Expanded:
+        return CCExpanded.fromWidget(widget as Expanded);
       case CustomForm:
         return CCFormSubmit.fromWidget(widget as CustomForm);
       default:
@@ -142,6 +151,24 @@ abstract class Component {
           name: "SizedBox",
           value: CCSizedBox(
               name: "SizedBox $childCount",
+              onUpdate: onUpdate,
+              onDelete: onDelete,
+              onWrap: onWrap,
+              onWrapChildren: onWrapChildren),
+        ),
+        SelectModel<Component?>(
+          name: "Flexible",
+          value: CCFlexible(
+              name: "Flexible $childCount",
+              onUpdate: onUpdate,
+              onDelete: onDelete,
+              onWrap: onWrap,
+              onWrapChildren: onWrapChildren),
+        ),
+        SelectModel<Component?>(
+          name: "Expanded",
+          value: CCExpanded(
+              name: "Expanded $childCount",
               onUpdate: onUpdate,
               onDelete: onDelete,
               onWrap: onWrap,

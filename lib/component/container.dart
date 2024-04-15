@@ -559,6 +559,8 @@ class CCContainer extends Component {
                   width: MediaQuery.of(context).size.width * widthDefaultComponent,
                   alignment: Alignment.centerLeft,
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text("Margin"),
                       Row(
